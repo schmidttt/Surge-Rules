@@ -1,0 +1,86 @@
+name: Sync Google rules
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Observation phase: daily at 04:00 Asia/Shanghai.
+    - cron: "0 4 * * *"
+      timezone: "Asia/Shanghai"
+    # Stable phase: Tuesday, Thursday, Saturday at the same time.
+    - cron: "0 4 * * 2,4,6"
+      timezone: "Asia/Shanghai"
+
+concurrency:
+  group: google-rules-sync
+  cancel-in-progress: false
+
+jobs:
+  build-and-open-review-pr:
+    # Scheduled runs are inert until ENABLE_SCHEDULED_SYNC=true.
+    # Observation is the default. Set SYNC_PHASE=stable after two weeks.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (vars.ENABLE_SCHEDULED_SYNC == 'true' &&
+        ((github.event.schedule == '0 4 * * *' && vars.SYNC_PHASE != 'stable') ||
+         (github.event.schedule == '0 4 * * 2,4,6' && vars.SYNC_PHASE == 'stable')))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Check out default branch
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Run offline tests
+        run: python3 -m unittest discover -s tests/google -v
+
+      - name: Build from pinned upstream commits
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 scripts/google/build_google_rules.py --fetch
+
+      - name: Show generated changes
+        run: git diff --check && git diff --stat
+
+      - name: Detect changes
+        id: changes
+        shell: bash
+        run: |
+          if git diff --quiet -- rules/Google reports/google; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create or update review branch
+        if: steps.changes.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BASE_BRANCH: ${{ github.event.repository.default_branch }}
+          REVIEW_BRANCH: automation/google-rules-sync
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin "$REVIEW_BRANCH:refs/remotes/origin/$REVIEW_BRANCH" || true
+          git switch -C "$REVIEW_BRANCH"
+          git add rules/Google reports/google
+          git commit -m "chore: sync Google rules"
+          git push --force-with-lease origin "HEAD:$REVIEW_BRANCH"
+          if gh pr view "$REVIEW_BRANCH" --json url --jq .url >/dev/null 2>&1; then
+            gh pr view "$REVIEW_BRANCH" --json url --jq .url
+          else
+            gh pr create \
+              --base "$BASE_BRANCH" \
+              --head "$REVIEW_BRANCH" \
+              --title "chore: review Google rules sync" \
+              --body "Automated Google.list refresh for manual review. Routing policy stays in Surge; BlackMatrix7 and Sukka are comparison-only. Review reports/google/google-report.json, reports/google/reference-audit.json, and docs/rules/google/REVIEW_CHECKLIST.md before merging."
+          fi
