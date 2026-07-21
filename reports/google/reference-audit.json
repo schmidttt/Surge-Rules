@@ -1,0 +1,51 @@
+{
+  "google_official_core": {
+    "counts": {
+      "google_ai": 0,
+      "google_main": 14,
+      "needs_review": 0,
+      "youtube": 1
+    },
+    "entries_persisted": false,
+    "note": "Curated product-specific assertions from Google documentation; not a complete Google ecosystem list.",
+    "total": 15
+  },
+  "policy": {
+    "needs_review_is_blocking_for_manual_merge": true,
+    "reference_entries_auto_merged": false,
+    "third_party_reference_entries_persisted": false,
+    "v2fly_is_only_generation_source": true
+  },
+  "schema_version": 2,
+  "sukka": {
+    "commit": "acba5416b5f6e2aaa749e637c2c59717ace11f9b",
+    "committed_at": "2026-07-21T03:49:11Z",
+    "global_google": {
+      "counts": {
+        "google_ai": 1,
+        "google_main": 72,
+        "needs_review": 20,
+        "youtube": 5
+      },
+      "entries_persisted": false,
+      "total": 98
+    },
+    "google_ai": {
+      "counts": {
+        "google_ai": 22,
+        "google_main": 1,
+        "needs_review": 1,
+        "youtube": 0
+      },
+      "entries_persisted": false,
+      "total": 24,
+      "unsupported_line_count": 2,
+      "unsupported_types": {
+        "DOMAIN-KEYWORD": 1,
+        "URL-REGEX": 1
+      }
+    },
+    "repository": "SukkaW/Surge",
+    "requested_ref": "master"
+  }
+}

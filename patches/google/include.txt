@@ -1,0 +1,4 @@
+# 补充 v2fly 遗漏的 Google 规则。普通域名/domain: 代表后缀，full: 代表精确主机。
+# 这里只处理域名归属，不在补丁中制定 DIRECT / REJECT 路由策略。
+# 示例（当前不启用）：
+# full:example.google.com

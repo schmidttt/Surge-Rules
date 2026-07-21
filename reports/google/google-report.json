@@ -1,0 +1,61 @@
+{
+  "blackmatrix": {
+    "commit": "e69663d642551aa3e0164a656179335a896127ad",
+    "committed_at": "2026-07-19T19:03:54Z",
+    "repository": "blackmatrix7/ios_rule_script",
+    "requested_ref": "master"
+  },
+  "comparison": {
+    "blackmatrix_domain_rules": 685,
+    "blackmatrix_non_domain_types": {
+      "DOMAIN-KEYWORD": 5,
+      "IP-CIDR": 4,
+      "IP-CIDR6": 1,
+      "PROCESS-NAME": 5,
+      "USER-AGENT": 3
+    },
+    "common_domain_rules": 613,
+    "note": "Aggregate comparison only; BlackMatrix7 entries are neither merged nor persisted in this repository.",
+    "only_blackmatrix_count": 72,
+    "only_v2fly_generated_count": 277
+  },
+  "counts": {
+    "ads_tagged_in_source": 53,
+    "cn_tagged_in_source": 126,
+    "exclude_patch": 0,
+    "google_deepmind_unique": 40,
+    "google_expanded": 1110,
+    "google_unique": 1110,
+    "include_patch": 0,
+    "main_output": 890,
+    "product_exact_excluded": 218,
+    "unsupported_regexp_omitted": 2,
+    "youtube_unique": 178
+  },
+  "safety": {
+    "blackmatrix_auto_merged": false,
+    "max_change_ratio": 0.1,
+    "official_core_assertions_passed": true,
+    "routing_policy_embedded": false,
+    "source_cn_and_ads_attributes_retained": true,
+    "sukka_auto_merged": false,
+    "surge_config_modified": false
+  },
+  "schema_version": 2,
+  "sukka": {
+    "commit": "acba5416b5f6e2aaa749e637c2c59717ace11f9b",
+    "committed_at": "2026-07-21T03:49:11Z",
+    "repository": "SukkaW/Surge",
+    "requested_ref": "master"
+  },
+  "unsupported_omitted": [
+    "regexp:^r+[0-9]+(---|\\.)sn-(2x3|ni5|j5o)\\w{5}\\.googlevideo\\.com$",
+    "regexp:^r+[0-9]+(---|\\.)sn-(2x3|ni5|j5o)\\w{5}\\.xn--ngstr-lra8j\\.com$"
+  ],
+  "v2fly": {
+    "commit": "462dc5706f1d578a2135e8f5dfbdade511094fa7",
+    "committed_at": "2026-07-21T08:54:40Z",
+    "repository": "v2fly/domain-list-community",
+    "requested_ref": "master"
+  }
+}

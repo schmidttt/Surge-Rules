@@ -1,0 +1,12 @@
+# Small offline fixture, not production data.
+include:google-deepmind
+include:youtube
+include:cn-extra @cn @-ads
+
+google.com
+googleapis.com
+gstatic.com
+full:accounts.google.com @cn
+ads.google.com @ads
+reference-main.example
+full:reference-exact.example

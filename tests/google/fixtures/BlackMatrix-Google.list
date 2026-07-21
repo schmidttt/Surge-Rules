@@ -1,0 +1,6 @@
+# Synthetic comparison fixture; no upstream rules copied.
+DOMAIN-SUFFIX,reference-main.example
+DOMAIN-SUFFIX,blackmatrix-only.example
+DOMAIN,reference-exact.example
+DOMAIN-KEYWORD,reference
+PROCESS-NAME,Reference Client

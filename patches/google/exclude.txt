@@ -1,0 +1,3 @@
+# 从 Google.list 中精确排除。
+# 示例（当前不启用）：
+# domain:obsolete-example.com

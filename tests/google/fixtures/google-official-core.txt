@@ -1,0 +1,4 @@
+# Minimal offline fixture, not the production assertion list.
+full:accounts.google.com
+domain:googleapis.com
+full:www.gstatic.com

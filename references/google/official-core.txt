@@ -1,0 +1,23 @@
+# Curated core assertions from product-specific Google documentation.
+# This is deliberately NOT described as a complete Google ecosystem list.
+#
+# Google Cloud console required domains:
+# https://docs.cloud.google.com/docs/get-started/required-domains
+full:console.cloud.google.com
+full:www.gstatic.com
+full:ssl.gstatic.com
+domain:clients6.google.com
+domain:googleapis.com
+full:apis.google.com
+full:reauth.cloud.google.com
+full:csp.withgoogle.com
+
+# ChromeOS sign-in and recommended host allowlist:
+# https://support.google.com/chrome/a/answer/6334001
+full:accounts.google.com
+full:www.google.com
+full:www.googleapis.com
+full:clients3.google.com
+domain:googleusercontent.com
+domain:gvt1.com
+full:lh3.ggpht.com
