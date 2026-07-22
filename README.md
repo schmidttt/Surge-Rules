@@ -2,13 +2,36 @@
 
 为 Surge 构建可审核、可回退、可独立维护的个人规则库。仓库采用多规则项目结构；每类规则分别维护生成脚本、补丁、报告、测试和同步工作流，避免不同规则之间相互耦合。
 
-当前只实现 Google 规则。私有仓库已完成首次上传和 GitHub Actions 手动验证；尚未修改或覆盖任何 Surge 配置。
+当前只实现 Google 规则。公开仓库已完成首次发布和 GitHub Actions 手动验证；尚未修改或覆盖任何 Surge 配置。
+
+## Google.list 的范围与用法
+
+[`rules/Google/Google.list`](rules/Google/Google.list) 是面向 Surge 的 Google 通用兜底规则。它以 v2fly `google` 根集合为唯一正式源，先排除上游中可明确识别的 Google AI / Gemini 与 YouTube 精确产品条目，再输出其余 `DOMAIN` 和 `DOMAIN-SUFFIX` 规则。
+
+需要注意：这不是 Google 官方域名清单，也不是与 Gemini、YouTube 完全互斥的数学集合。`DOMAIN-SUFFIX,google.com`、`DOMAIN-SUFFIX,googleapis.com` 等父级规则仍可能覆盖产品子域，因此必须依靠 Surge 从上到下、首次命中即停止的规则顺序完成最终分流。
+
+推荐顺序：
+
+```ini
+# 广告与跟踪规则应放在更前面
+RULE-SET,<你的 Google AI / AI 规则地址>,🤖 Intelligence,...
+RULE-SET,<你的 YouTube 规则地址>,📹 YouTube,...
+RULE-SET,<你当前使用的 GoogleCN 规则地址>,DIRECT,...
+RULE-SET,https://raw.githubusercontent.com/schmidttt/Surge-Rules/main/rules/Google/Google.list,🔍 Google,update-interval=86400,extended-matching
+```
+
+- `🤖 Intelligence` 先接管 Gemini、AI Studio、Google AI API 等已识别的 Google AI 流量。
+- `📹 YouTube` 先接管 YouTube 页面、接口和视频相关流量。
+- `GoogleCN` 如继续使用，应在本列表之前处理可直连的 Google 静态资源。
+- 本列表最后接管其余 Google 域名；它本身不决定 `DIRECT`、`REJECT` 或具体代理节点。
+- 切换时应替换原有广义 `Google.list` 规则，不要与旧 Google 大表并列重复引用。
+- v2fly 的 `@cn`、`@ads` 来源属性不会写入 Surge 规则行；相关直连和拦截仍由前置 GoogleCN、广告规则负责。
 
 ## 规则项目
 
 | 规则 | 状态 | 正式上游 | 正式产物 |
 |---|---|---|---|
-| Google | 本地审核 | `v2fly/domain-list-community` | `rules/Google/Google.list` |
+| Google | 自动同步、风险分级 | `v2fly/domain-list-community` | `rules/Google/Google.list` |
 
 未来新增其他规则时，应建立独立的 `rules/<Name>/`、`scripts/<name>/`、`patches/<name>/`、`reports/<name>/`、`tests/<name>/` 和对应工作流；不能让某一规则的补丁或发布流程隐式影响其他规则。
 
@@ -20,8 +43,8 @@
 - 用 Google 官方产品文档整理的小型核心断言检查明显缺失；该断言不冒充 Google 全生态清单。
 - 使用 `include.txt` 和 `exclude.txt` 处理个人例外，不手工维护整张大表。
 - 保留 v2fly 的 `@cn`、`@ads` 可转换域名；DIRECT/REJECT 由以后调整 Surge 规则顺序时决定。
-- 输出标准 Surge `RULE-SET`，并在每次同步时生成可审查报告。
-- GitHub Actions 有变化时只创建或更新审核 PR，不直接修改默认分支。
+- 输出标准 Surge `RULE-SET`，表头随采用的 v2fly 提交时间和规则总数更新。
+- 每次同步分别统计新增、删除和真实变动率；低风险更新可自动合并，任何删除和可疑变化保留 PR。
 
 ## 目录
 
@@ -40,6 +63,7 @@ Surge-Rules/
 │   └── official-core.txt
 ├── reports/google/
 │   ├── google-report.json
+│   ├── change-assessment.json
 │   └── reference-audit.json
 ├── rules/Google/
 │   └── Google.list
@@ -91,13 +115,14 @@ python3 scripts/google/build_google_rules.py --fetch
 - 稳定期：每周二、周四、周六北京时间 04:00 整触发。
 - 定时任务默认不执行构建；明确设置仓库变量 `ENABLE_SCHEDULED_SYNC=true` 后才启用。
 - 默认阶段为观察期；两周后设置 `SYNC_PHASE=stable` 即切换到稳定期。
-- 无变化不提交；有变化只创建或更新审核 PR，不自动合并。
+- 无变化不提交；有变化先创建 PR 留痕。
+- 设置 `AUTO_MERGE_LOW_RISK=true` 后，仅“无删除、新增不超过 20 条、真实变动不超过 2%、不支持语法集合未变化”的更新自动合并。
+- 任何删除、超出低风险门槛或不支持语法变化都会保留 PR；真实变动超过 10% 或核心检查失败时构建直接停止。
 
 ## 发布边界
 
 - 当前不修改 Surge v36 或其他 Surge 配置。
-- 当前不启用定时同步变量。
-- 当前不自动合并审核 PR。
+- 定时同步与低风险自动合并都由独立仓库变量显式控制，随时可以关闭。
 - 当前不生成 GoogleCN、广告或其他路由策略文件。
 - 项目脚本采用 MIT；v2fly 的 MIT 许可证全文和署名独立保留。
 - Sukka 与 BlackMatrix7 只在线读取并生成聚合统计，不在公开报告和测试夹具中转载其具体规则。
@@ -120,4 +145,4 @@ https://raw.githubusercontent.com/schmidttt/Surge-Rules/main/rules/Google/Google
 - Sukka `GLOBAL.GOOGLE`：98 条；只读分类，自动合并 0 条
 - Google 官方核心断言：15 条，当前全部被三层产品体系覆盖
 
-这些数字只是当前上游快照。后续同步若总量变化超过 10%，构建会停止并等待人工确认。
+这些数字只是当前上游快照。后续同步若实际新增与删除总量超过原列表 10%，构建会停止并等待人工确认。

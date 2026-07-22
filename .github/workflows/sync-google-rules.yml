@@ -60,8 +60,20 @@ jobs:
             echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Read risk assessment
+        if: steps.changes.outputs.changed == 'true'
+        id: risk
+        shell: bash
+        run: |
+          echo "auto_merge=$(jq -r '.auto_merge_eligible' reports/google/change-assessment.json)" >> "$GITHUB_OUTPUT"
+          echo "classification=$(jq -r '.classification' reports/google/change-assessment.json)" >> "$GITHUB_OUTPUT"
+          echo "added=$(jq -r '.added_count' reports/google/change-assessment.json)" >> "$GITHUB_OUTPUT"
+          echo "removed=$(jq -r '.removed_count' reports/google/change-assessment.json)" >> "$GITHUB_OUTPUT"
+          echo "ratio=$(jq -r '.actual_change_ratio' reports/google/change-assessment.json)" >> "$GITHUB_OUTPUT"
+
       - name: Create or update review branch
         if: steps.changes.outputs.changed == 'true'
+        id: review_pr
         env:
           GH_TOKEN: ${{ github.token }}
           BASE_BRANCH: ${{ github.event.repository.default_branch }}
@@ -75,12 +87,47 @@ jobs:
           git add rules/Google reports/google
           git commit -m "chore: sync Google rules"
           git push --force-with-lease origin "HEAD:$REVIEW_BRANCH"
-          if gh pr view "$REVIEW_BRANCH" --json url --jq .url >/dev/null 2>&1; then
-            gh pr view "$REVIEW_BRANCH" --json url --jq .url
+
+          REASONS=$(jq -r 'if (.reasons | length) == 0 then "none" else (.reasons | join(", ")) end' reports/google/change-assessment.json)
+          cat > /tmp/google-rules-pr.md <<EOF
+          Automated Google.list refresh.
+
+          - Classification: ${{ steps.risk.outputs.classification }}
+          - Added rules: ${{ steps.risk.outputs.added }}
+          - Removed rules: ${{ steps.risk.outputs.removed }}
+          - Actual change ratio: ${{ steps.risk.outputs.ratio }}
+          - Review reasons: ${REASONS}
+
+          BlackMatrix7 and Sukka remain comparison-only. Routing policy stays in Surge.
+          Detailed changes: reports/google/change-assessment.json
+          Review guide: docs/rules/google/REVIEW_CHECKLIST.md
+          EOF
+
+          if PR_URL=$(gh pr view "$REVIEW_BRANCH" --json url --jq .url 2>/dev/null); then
+            gh pr edit "$PR_URL" --body-file /tmp/google-rules-pr.md
           else
-            gh pr create \
+            PR_URL=$(gh pr create \
               --base "$BASE_BRANCH" \
               --head "$REVIEW_BRANCH" \
               --title "chore: review Google rules sync" \
-              --body "Automated Google.list refresh for manual review. Routing policy stays in Surge; BlackMatrix7 and Sukka are comparison-only. Review reports/google/google-report.json, reports/google/reference-audit.json, and docs/rules/google/REVIEW_CHECKLIST.md before merging."
+              --body-file /tmp/google-rules-pr.md)
           fi
+          echo "url=$PR_URL" >> "$GITHUB_OUTPUT"
+
+      - name: Auto-merge low-risk refresh
+        if: >-
+          steps.changes.outputs.changed == 'true' &&
+          steps.risk.outputs.auto_merge == 'true' &&
+          vars.AUTO_MERGE_LOW_RISK == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh pr merge "${{ steps.review_pr.outputs.url }}" --squash --delete-branch
+
+      - name: Keep risky refresh for review
+        if: >-
+          steps.changes.outputs.changed == 'true' &&
+          (steps.risk.outputs.auto_merge != 'true' ||
+           vars.AUTO_MERGE_LOW_RISK != 'true')
+        run: >-
+          echo "::warning::Google rules refresh requires review:
+          ${{ steps.review_pr.outputs.url }}"
