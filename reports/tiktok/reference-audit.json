@@ -1,0 +1,42 @@
+{
+  "policy": {
+    "reference_entries_auto_merged": false,
+    "third_party_reference_entries_persisted": false,
+    "v2fly_is_only_formal_upstream": true
+  },
+  "product": "TikTok",
+  "schema_version": 1,
+  "sources": {
+    "blackmatrix": {
+      "commit": "40ae51ca0186ee07bd48e1bdc22bdf10f3c66a5e",
+      "committed_at": "2026-07-21T19:15:43Z",
+      "domain_rules": 29,
+      "entries_persisted": false,
+      "exact_common_rules": 16,
+      "non_domain_types": {
+        "DOMAIN-KEYWORD": 2,
+        "PROCESS-NAME": 1,
+        "USER-AGENT": 1
+      },
+      "not_covered_by_generated_count": 13,
+      "only_generated_count": 24,
+      "only_reference_count": 13,
+      "repository": "blackmatrix7/ios_rule_script",
+      "requested_ref": "master"
+    },
+    "sukka": {
+      "commit": "5e174cd3dc8d78e688a402a98ecbd063e08e927f",
+      "committed_at": "2026-07-21T22:11:41Z",
+      "covered_by_generated": 10,
+      "domain_rules": 12,
+      "entries_persisted": false,
+      "non_domain_types": {
+        "DOMAIN-KEYWORD": 1,
+        "USER-AGENT": 1
+      },
+      "not_covered_by_generated_count": 2,
+      "repository": "SukkaW/Surge",
+      "requested_ref": "master"
+    }
+  }
+}

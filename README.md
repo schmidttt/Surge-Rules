@@ -2,7 +2,25 @@
 
 为 Surge 构建可审核、可回退、可独立维护的个人规则库。仓库采用多规则项目结构；每类规则分别维护生成脚本、补丁、报告、测试和同步工作流，避免不同规则之间相互耦合。
 
-当前只实现 Google 规则。公开仓库已完成首次发布和 GitHub Actions 手动验证；尚未修改或覆盖任何 Surge 配置。
+当前实现 Google、YouTube 和 TikTok 三类规则。每份规则都以 v2fly 为唯一正式上游，BlackMatrix7 与 Sukka 仅作聚合审计；本仓库不会自动修改或覆盖 Surge 配置。
+
+## YouTube.list 与 TikTok.list
+
+- [`rules/YouTube/YouTube.list`](rules/YouTube/YouTube.list) 覆盖 YouTube 页面、接口、视频、图片和产品相关域名，供 `📹 YouTube` 策略组使用。
+- [`rules/TikTok/TikTok.list`](rules/TikTok/TikTok.list) 覆盖 TikTok 应用、网页、接口、直播和产品 CDN，供 `📱 TikTok` 策略组使用；不因同属字节跳动而收录 CapCut、Trae 或 MarsCode。
+- 两份列表都保留 v2fly 可转换的 `@ads`、`@cn`、`@!cn` 域名；属性本身不写入 Surge，广告拦截和直连仍由前置规则决定。
+- Sukka 侧重地区敏感流量，BlackMatrix7 是聚合成品表；两者的独有条目只产生数量审计，不会自动进入本项目规则。
+
+推荐的核心顺序：
+
+```ini
+# 广告与跟踪规则放在最前面
+RULE-SET,<你的 Google AI / AI 规则地址>,🤖 Intelligence,...
+RULE-SET,https://raw.githubusercontent.com/schmidttt/Surge-Rules/main/rules/YouTube/YouTube.list,📹 YouTube,update-interval=86400,extended-matching
+RULE-SET,https://raw.githubusercontent.com/schmidttt/Surge-Rules/main/rules/Google/Google.list,🔍 Google,update-interval=86400,extended-matching
+RULE-SET,https://raw.githubusercontent.com/schmidttt/Surge-Rules/main/rules/TikTok/TikTok.list,📱 TikTok,update-interval=86400,extended-matching
+RULE-SET,https://ruleset.skk.moe/List/non_ip/stream.conf,🎞️ 全球媒体,update-interval=86400,extended-matching
+```
 
 ## Google.list 的范围与用法
 
@@ -32,6 +50,8 @@ RULE-SET,https://raw.githubusercontent.com/schmidttt/Surge-Rules/main/rules/Goog
 | 规则 | 状态 | 正式上游 | 正式产物 |
 |---|---|---|---|
 | Google | 自动同步、风险分级 | `v2fly/domain-list-community` | `rules/Google/Google.list` |
+| YouTube | 自动同步、独立风险分级 | `v2fly/domain-list-community:data/youtube` | `rules/YouTube/YouTube.list` |
+| TikTok | 自动同步、独立风险分级 | `v2fly/domain-list-community:data/tiktok` | `rules/TikTok/TikTok.list` |
 
 未来新增其他规则时，应建立独立的 `rules/<Name>/`、`scripts/<name>/`、`patches/<name>/`、`reports/<name>/`、`tests/<name>/` 和对应工作流；不能让某一规则的补丁或发布流程隐式影响其他规则。
 
@@ -51,27 +71,34 @@ RULE-SET,https://raw.githubusercontent.com/schmidttt/Surge-Rules/main/rules/Goog
 ```text
 Surge-Rules/
 ├── .github/workflows/
-│   └── sync-google-rules.yml
-├── docs/rules/google/
-│   ├── DESIGN.md
-│   ├── SOURCE_EVALUATION.md
-│   └── REVIEW_CHECKLIST.md
-├── patches/google/
-│   ├── include.txt
-│   └── exclude.txt
+│   ├── sync-google-rules.yml
+│   ├── sync-youtube-rules.yml
+│   └── sync-tiktok-rules.yml
+├── docs/rules/
+│   ├── google/
+│   ├── youtube/
+│   ├── tiktok/
+│   └── media/
+├── patches/
+│   ├── google/
+│   ├── youtube/
+│   └── tiktok/
 ├── references/google/
 │   └── official-core.txt
-├── reports/google/
-│   ├── google-report.json
-│   ├── change-assessment.json
-│   └── reference-audit.json
-├── rules/Google/
-│   └── Google.list
-├── scripts/google/
-│   └── build_google_rules.py
-├── tests/google/
-│   ├── fixtures/
-│   └── test_build_google_rules.py
+├── reports/
+│   ├── google/
+│   ├── youtube/
+│   └── tiktok/
+├── rules/
+│   ├── Google/Google.list
+│   ├── YouTube/YouTube.list
+│   └── TikTok/TikTok.list
+├── scripts/
+│   ├── google/build_google_rules.py
+│   └── media/build_media_rules.py
+├── tests/
+│   ├── google/
+│   └── media/
 ├── THIRD_PARTY_LICENSES/
 │   └── v2fly-MIT.txt
 ├── LICENSE
@@ -99,15 +126,18 @@ BlackMatrix7 + Sukka + Google 官方产品断言
 
 ```bash
 python3 -m unittest discover -s tests/google -v
+python3 -m unittest discover -s tests/media -v
 ```
 
 从当前上游构建：
 
 ```bash
 python3 scripts/google/build_google_rules.py --fetch
+python3 scripts/media/build_media_rules.py --product youtube --fetch
+python3 scripts/media/build_media_rules.py --product tiktok --fetch
 ```
 
-构建器会先把产物写入临时目录，全部校验通过后才替换 `rules/Google/` 和 `reports/google/` 中的文件。下载、解析或数量变化保护失败时，现有产物不会被覆盖。
+构建器会先把产物写入临时目录，全部校验通过后才替换对应 `rules/` 和 `reports/` 文件。下载、解析、核心域名或数量变化保护失败时，现有产物不会被覆盖。
 
 ## 同步节奏
 
@@ -116,21 +146,26 @@ python3 scripts/google/build_google_rules.py --fetch
 - 定时任务默认不执行构建；明确设置仓库变量 `ENABLE_SCHEDULED_SYNC=true` 后才启用。
 - 默认阶段为观察期；两周后设置 `SYNC_PHASE=stable` 即切换到稳定期。
 - 无变化不提交；有变化先创建 PR 留痕。
-- 设置 `AUTO_MERGE_LOW_RISK=true` 后，仅“无删除、新增不超过 20 条、真实变动不超过 2%、不支持语法集合未变化”的更新自动合并。
-- 任何删除、超出低风险门槛或不支持语法变化都会保留 PR；真实变动超过 10% 或核心检查失败时构建直接停止。
+- 设置 `AUTO_MERGE_LOW_RISK=true` 后，只有无删除、未触发各规则独立风险门槛的更新才会自动合并。
+- Google：新增不超过 20 条、真实变动不超过 2%；超过 10% 停止构建。
+- YouTube：新增不超过 5 条、真实变动不超过 3%；超过 15% 停止构建。
+- TikTok：新增不超过 2 条、真实变动不超过 8%；超过 20% 停止构建。
+- 任意删除、不支持语法变化或 Sukka 核心覆盖差距增加都会保留 PR；核心域名消失时直接停止构建。
 
 ## 发布边界
 
 - 当前不修改 Surge v36 或其他 Surge 配置。
 - 定时同步与低风险自动合并都由独立仓库变量显式控制，随时可以关闭。
-- 当前不生成 GoogleCN、广告或其他路由策略文件。
+- 当前不生成 GoogleCN、广告或其他路由策略文件，也不修改 Surge v36。
 - 项目脚本采用 MIT；v2fly 的 MIT 许可证全文和署名独立保留。
 - Sukka 与 BlackMatrix7 只在线读取并生成聚合统计，不在公开报告和测试夹具中转载其具体规则。
 
-仓库公开后，Google 规则的远程地址将是：
+正式远程地址：
 
 ```text
 https://raw.githubusercontent.com/schmidttt/Surge-Rules/main/rules/Google/Google.list
+https://raw.githubusercontent.com/schmidttt/Surge-Rules/main/rules/YouTube/YouTube.list
+https://raw.githubusercontent.com/schmidttt/Surge-Rules/main/rules/TikTok/TikTok.list
 ```
 
 ## 本地审核基线（2026-07-21，Asia/Shanghai）
@@ -146,3 +181,11 @@ https://raw.githubusercontent.com/schmidttt/Surge-Rules/main/rules/Google/Google
 - Google 官方核心断言：15 条，当前全部被三层产品体系覆盖
 
 这些数字只是当前上游快照。后续同步若实际新增与删除总量超过原列表 10%，构建会停止并等待人工确认。
+
+## YouTube / TikTok 本地审核基线（2026-07-22，Asia/Shanghai）
+
+- v2fly 固定提交：`b086c38db74b626c0a24fdd8ed41e33515577bf9`。
+- `YouTube.list`：178 条；Sukka 9 条域名规则全部覆盖；未启用本地补丁。
+- `TikTok.list`：40 条，其中 v2fly 37 条，本地显式补充 3 条；Sukka 12 条域名规则覆盖 10 条，剩余 2 条继续观察。
+- 两份列表重复构建均为 0 新增、0 删除；表头使用 v2fly 提交时间的北京时间，文件末尾无额外换行。
+- BlackMatrix7 和 Sukka 的具体独有条目不会写入公开报告或自动合并；完整性差异只保留聚合数量。

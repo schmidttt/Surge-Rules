@@ -1,0 +1,6 @@
+# 补充 v2fly 遗漏的 TikTok 域名。普通域名/domain: 代表后缀，full: 代表精确主机。
+# 2026-07-22：以下三项同时出现在 Sukka 与 BlackMatrix7 的 TikTok 分类中，
+# 并有公开的 TikTok 实际主机使用记录；作为显式人工补丁纳入，不参与自动扩展。
+domain:ibytedtos.com
+domain:ipstatp.com
+domain:isnssdk.com

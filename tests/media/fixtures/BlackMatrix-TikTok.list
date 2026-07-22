@@ -1,0 +1,4 @@
+# Synthetic BlackMatrix-shaped fixture; no third-party entries are copied.
+DOMAIN-SUFFIX,tiktok.com
+DOMAIN-SUFFIX,blackmatrix-shortvideo.example
+USER-AGENT,TikTok*

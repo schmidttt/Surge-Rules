@@ -1,0 +1,25 @@
+{
+  "actual_change_count": 0,
+  "actual_change_ratio": 0.0,
+  "added": [],
+  "added_count": 0,
+  "auto_merge_eligible": true,
+  "baseline_rules": 178,
+  "classification": "low-risk",
+  "generated_rules": 178,
+  "previous_sukka_gap_count": 0,
+  "product": "YouTube",
+  "reasons": [],
+  "removed": [],
+  "removed_count": 0,
+  "schema_version": 1,
+  "sukka_gap_count": 0,
+  "thresholds": {
+    "automatic_deletions_allowed": false,
+    "max_auto_additions": 5,
+    "max_auto_change_ratio": 0.03,
+    "max_build_change_ratio": 0.15,
+    "minimum_rules": 150
+  },
+  "unsupported_changed": false
+}

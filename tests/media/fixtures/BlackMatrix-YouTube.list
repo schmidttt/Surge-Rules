@@ -1,0 +1,5 @@
+# Synthetic BlackMatrix-shaped fixture; no third-party entries are copied.
+DOMAIN-SUFFIX,youtube.com
+DOMAIN-SUFFIX,blackmatrix-video.example
+DOMAIN-KEYWORD,youtube
+IP-CIDR,192.0.2.0/24,no-resolve
