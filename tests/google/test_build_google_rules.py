@@ -116,10 +116,14 @@ class BuildTests(unittest.TestCase):
         self.assertEqual(omitted, [])
 
     def test_render_has_no_trailing_newline(self):
-        metadata = MODULE.SourceMetadata("example/repo", "main", "abc", None)
-        rendered = MODULE.render_rules(
-            "Test", metadata, [MODULE.Rule("domain", "google.com")]
+        metadata = MODULE.SourceMetadata(
+            "example/repo", "main", "abc", "2026-07-21T08:54:40Z"
         )
+        rendered = MODULE.render_rules(metadata, [MODULE.Rule("domain", "google.com")])
+        self.assertTrue(rendered.startswith("# NAME: schmidttt's Google Ruleset\n"))
+        self.assertIn("# UPDATED: 2026.07.21 16:54:40", rendered)
+        self.assertIn("# TOTAL: 1", rendered)
+        self.assertIn("# ======== 上游同步规则 ========", rendered)
         self.assertTrue(rendered.endswith("DOMAIN-SUFFIX,google.com"))
         self.assertFalse(rendered.endswith("\n"))
 
@@ -134,6 +138,69 @@ class BuildTests(unittest.TestCase):
             MODULE.validate_outputs(
                 main, existing, 0.10, False
             )
+
+    def test_equal_size_replacement_is_counted_as_real_churn(self):
+        main = [
+            MODULE.Rule("domain", "google.com"),
+            MODULE.Rule("domain", "googleapis.com"),
+            MODULE.Rule("domain", "gstatic.com"),
+            MODULE.Rule("domain", "new.example"),
+        ]
+        existing = {
+            ("domain", "google.com"),
+            ("domain", "googleapis.com"),
+            ("domain", "gstatic.com"),
+            ("domain", "old.example"),
+        }
+        with self.assertRaises(MODULE.BuildError):
+            MODULE.validate_outputs(main, existing, 0.10, False)
+
+    def test_addition_only_small_change_is_low_risk(self):
+        existing = {
+            ("domain", "google.com"),
+            ("domain", "googleapis.com"),
+            ("domain", "gstatic.com"),
+        }
+        main = [MODULE.Rule(kind, value) for kind, value in existing]
+        main.append(MODULE.Rule("domain", "new.example"))
+        assessment = MODULE.assess_change(
+            main, existing, [], set(), 20, 0.50, 0.10
+        )
+        self.assertTrue(assessment["auto_merge_eligible"])
+        self.assertEqual(assessment["classification"], "low-risk")
+        self.assertEqual(assessment["added_count"], 1)
+        self.assertEqual(assessment["removed_count"], 0)
+
+    def test_any_deletion_requires_review(self):
+        existing = {
+            ("domain", "google.com"),
+            ("domain", "googleapis.com"),
+            ("domain", "gstatic.com"),
+            ("domain", "old.example"),
+        }
+        main = [
+            MODULE.Rule(kind, value)
+            for kind, value in existing
+            if value != "old.example"
+        ]
+        assessment = MODULE.assess_change(
+            main, existing, [], set(), 20, 0.50, 0.10
+        )
+        self.assertFalse(assessment["auto_merge_eligible"])
+        self.assertIn("rules-removed", assessment["reasons"])
+
+    def test_unsupported_rule_change_requires_review(self):
+        existing = {
+            ("domain", "google.com"),
+            ("domain", "googleapis.com"),
+            ("domain", "gstatic.com"),
+        }
+        main = [MODULE.Rule(kind, value) for kind, value in existing]
+        assessment = MODULE.assess_change(
+            main, existing, ["regexp:new"], {"regexp:old"}, 20, 0.50, 0.10
+        )
+        self.assertFalse(assessment["auto_merge_eligible"])
+        self.assertIn("unsupported-rule-set-changed", assessment["reasons"])
 
     def test_blackmatrix_is_comparison_only(self):
         main, _, _ = MODULE.build_outputs(self.tree, [], [])
@@ -204,6 +271,7 @@ class IntegrationTests(unittest.TestCase):
             self.assertFalse((root / "rules/Google/GoogleCN-Candidate.list").exists())
             self.assertTrue((root / "reports/google/google-report.json").is_file())
             self.assertTrue((root / "reports/google/reference-audit.json").is_file())
+            self.assertTrue((root / "reports/google/change-assessment.json").is_file())
             audit = (root / "reports/google/reference-audit.json").read_text(
                 encoding="utf-8"
             )
