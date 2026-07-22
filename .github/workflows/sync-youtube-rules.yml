@@ -1,0 +1,129 @@
+name: Sync YouTube rules
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 4 * * *"
+      timezone: "Asia/Shanghai"
+    - cron: "0 4 * * 2,4,6"
+      timezone: "Asia/Shanghai"
+
+concurrency:
+  group: youtube-rules-sync
+  cancel-in-progress: false
+
+jobs:
+  build-and-open-review-pr:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (vars.ENABLE_SCHEDULED_SYNC == 'true' &&
+        ((github.event.schedule == '0 4 * * *' && vars.SYNC_PHASE != 'stable') ||
+         (github.event.schedule == '0 4 * * 2,4,6' && vars.SYNC_PHASE == 'stable')))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Check out default branch
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Run offline tests
+        run: python3 -m unittest discover -s tests/media -v
+
+      - name: Build from pinned upstream commits
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 scripts/media/build_media_rules.py --product youtube --fetch
+
+      - name: Show generated changes
+        run: git diff --check && git diff --stat
+
+      - name: Detect changes
+        id: changes
+        shell: bash
+        run: |
+          if git diff --quiet -- rules/YouTube reports/youtube; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Read risk assessment
+        if: steps.changes.outputs.changed == 'true'
+        id: risk
+        shell: bash
+        run: |
+          echo "auto_merge=$(jq -r '.auto_merge_eligible' reports/youtube/change-assessment.json)" >> "$GITHUB_OUTPUT"
+          echo "classification=$(jq -r '.classification' reports/youtube/change-assessment.json)" >> "$GITHUB_OUTPUT"
+          echo "added=$(jq -r '.added_count' reports/youtube/change-assessment.json)" >> "$GITHUB_OUTPUT"
+          echo "removed=$(jq -r '.removed_count' reports/youtube/change-assessment.json)" >> "$GITHUB_OUTPUT"
+          echo "ratio=$(jq -r '.actual_change_ratio' reports/youtube/change-assessment.json)" >> "$GITHUB_OUTPUT"
+
+      - name: Create or update review branch
+        if: steps.changes.outputs.changed == 'true'
+        id: review_pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BASE_BRANCH: ${{ github.event.repository.default_branch }}
+          REVIEW_BRANCH: automation/youtube-rules-sync
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin "$REVIEW_BRANCH:refs/remotes/origin/$REVIEW_BRANCH" || true
+          git switch -C "$REVIEW_BRANCH"
+          git add rules/YouTube reports/youtube
+          git commit -m "chore: sync YouTube rules"
+          git push --force-with-lease origin "HEAD:$REVIEW_BRANCH"
+
+          REASONS=$(jq -r 'if (.reasons | length) == 0 then "none" else (.reasons | join(", ")) end' reports/youtube/change-assessment.json)
+          cat > /tmp/youtube-rules-pr.md <<EOF
+          Automated YouTube.list refresh.
+
+          - Classification: ${{ steps.risk.outputs.classification }}
+          - Added rules: ${{ steps.risk.outputs.added }}
+          - Removed rules: ${{ steps.risk.outputs.removed }}
+          - Actual change ratio: ${{ steps.risk.outputs.ratio }}
+          - Review reasons: ${REASONS}
+
+          v2fly is the only formal upstream. BlackMatrix7 and Sukka remain comparison-only.
+          Detailed changes: reports/youtube/change-assessment.json
+          Review guide: docs/rules/media/REVIEW_CHECKLIST.md
+          EOF
+
+          if PR_URL=$(gh pr view "$REVIEW_BRANCH" --json url --jq .url 2>/dev/null); then
+            gh pr edit "$PR_URL" --body-file /tmp/youtube-rules-pr.md
+          else
+            PR_URL=$(gh pr create \
+              --base "$BASE_BRANCH" \
+              --head "$REVIEW_BRANCH" \
+              --title "chore: review YouTube rules sync" \
+              --body-file /tmp/youtube-rules-pr.md)
+          fi
+          echo "url=$PR_URL" >> "$GITHUB_OUTPUT"
+
+      - name: Auto-merge low-risk refresh
+        if: >-
+          steps.changes.outputs.changed == 'true' &&
+          steps.risk.outputs.auto_merge == 'true' &&
+          vars.AUTO_MERGE_LOW_RISK == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh pr merge "${{ steps.review_pr.outputs.url }}" --squash --delete-branch
+
+      - name: Keep risky refresh for review
+        if: >-
+          steps.changes.outputs.changed == 'true' &&
+          (steps.risk.outputs.auto_merge != 'true' ||
+           vars.AUTO_MERGE_LOW_RISK != 'true')
+        run: >-
+          echo "::warning::YouTube rules refresh requires review:
+          ${{ steps.review_pr.outputs.url }}"
