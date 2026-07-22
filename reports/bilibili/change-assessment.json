@@ -1,0 +1,25 @@
+{
+  "actual_change_count": 0,
+  "actual_change_ratio": 0.0,
+  "added": [],
+  "added_count": 0,
+  "auto_merge_eligible": true,
+  "baseline_rules": 55,
+  "classification": "low-risk",
+  "generated_rules": 55,
+  "previous_sukka_gap_count": 0,
+  "product": "BiliBili",
+  "reasons": [],
+  "removed": [],
+  "removed_count": 0,
+  "schema_version": 1,
+  "sukka_gap_count": 0,
+  "thresholds": {
+    "automatic_deletions_allowed": false,
+    "max_auto_additions": 3,
+    "max_auto_change_ratio": 0.06,
+    "max_build_change_ratio": 0.2,
+    "minimum_rules": 45
+  },
+  "unsupported_changed": false
+}

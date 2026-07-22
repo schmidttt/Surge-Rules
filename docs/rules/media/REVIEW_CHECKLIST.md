@@ -1,4 +1,4 @@
-# YouTube / TikTok 同步审核清单
+# YouTube / TikTok / BiliBili 同步审核清单
 
 正常的少量纯新增可以由工作流自动合并。出现 `review-required` 时按以下顺序检查：
 

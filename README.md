@@ -2,13 +2,14 @@
 
 为 Surge 构建可审核、可回退、可独立维护的个人规则库。仓库采用多规则项目结构；每类规则分别维护生成脚本、补丁、报告、测试和同步工作流，避免不同规则之间相互耦合。
 
-当前实现 Google、YouTube 和 TikTok 三类规则。每份规则都以 v2fly 为唯一正式上游，BlackMatrix7 与 Sukka 仅作聚合审计；本仓库不会自动修改或覆盖 Surge 配置。
+当前实现 Google、YouTube、TikTok 和 BiliBili 四类规则。每份规则都以 v2fly 为唯一正式上游，BlackMatrix7 与 Sukka 仅作聚合审计；本仓库不会自动修改或覆盖 Surge 配置。
 
-## YouTube.list 与 TikTok.list
+## YouTube.list、TikTok.list 与 BiliBili.list
 
 - [`rules/YouTube/YouTube.list`](rules/YouTube/YouTube.list) 覆盖 YouTube 页面、接口、视频、图片和产品相关域名，供 `📹 YouTube` 策略组使用。
 - [`rules/TikTok/TikTok.list`](rules/TikTok/TikTok.list) 覆盖 TikTok 应用、网页、接口、直播和产品 CDN，供 `📱 TikTok` 策略组使用；不因同属字节跳动而收录 CapCut、Trae 或 MarsCode。
-- 两份列表都保留 v2fly 可转换的 `@ads`、`@cn`、`@!cn` 域名；属性本身不写入 Surge，广告拦截和直连仍由前置规则决定。
+- [`rules/BiliBili/BiliBili.list`](rules/BiliBili/BiliBili.list) 覆盖哔哩哔哩大陆主站、接口、CDN、漫画、游戏与国际版域名，供 `📺 BiliBili` 策略组使用；日常选择 `DIRECT`，需要时整体切换香港或台湾入口。
+- 三份列表都保留 v2fly 可转换的 `@ads`、`@cn`、`@!cn` 域名；属性本身不写入 Surge，广告拦截和直连仍由前置规则决定。
 - Sukka 侧重地区敏感流量，BlackMatrix7 是聚合成品表；两者的独有条目只产生数量审计，不会自动进入本项目规则。
 
 推荐的核心顺序：
@@ -19,6 +20,7 @@ RULE-SET,<你的 Google AI / AI 规则地址>,🤖 Intelligence,...
 RULE-SET,https://raw.githubusercontent.com/schmidttt/Surge-Rules/main/rules/YouTube/YouTube.list,📹 YouTube,update-interval=86400,extended-matching
 RULE-SET,https://raw.githubusercontent.com/schmidttt/Surge-Rules/main/rules/Google/Google.list,🔍 Google,update-interval=86400,extended-matching
 RULE-SET,https://raw.githubusercontent.com/schmidttt/Surge-Rules/main/rules/TikTok/TikTok.list,📱 TikTok,update-interval=86400,extended-matching
+RULE-SET,https://raw.githubusercontent.com/schmidttt/Surge-Rules/main/rules/BiliBili/BiliBili.list,📺 BiliBili,update-interval=86400,extended-matching
 RULE-SET,https://ruleset.skk.moe/List/non_ip/stream.conf,🎞️ 全球媒体,update-interval=86400,extended-matching
 ```
 
@@ -52,6 +54,7 @@ RULE-SET,https://raw.githubusercontent.com/schmidttt/Surge-Rules/main/rules/Goog
 | Google | 自动同步、风险分级 | `v2fly/domain-list-community` | `rules/Google/Google.list` |
 | YouTube | 自动同步、独立风险分级 | `v2fly/domain-list-community:data/youtube` | `rules/YouTube/YouTube.list` |
 | TikTok | 自动同步、独立风险分级 | `v2fly/domain-list-community:data/tiktok` | `rules/TikTok/TikTok.list` |
+| BiliBili | 自动同步、独立风险分级 | `v2fly/domain-list-community:data/bilibili` | `rules/BiliBili/BiliBili.list` |
 
 未来新增其他规则时，应建立独立的 `rules/<Name>/`、`scripts/<name>/`、`patches/<name>/`、`reports/<name>/`、`tests/<name>/` 和对应工作流；不能让某一规则的补丁或发布流程隐式影响其他规则。
 
@@ -73,26 +76,31 @@ Surge-Rules/
 ├── .github/workflows/
 │   ├── sync-google-rules.yml
 │   ├── sync-youtube-rules.yml
-│   └── sync-tiktok-rules.yml
+│   ├── sync-tiktok-rules.yml
+│   └── sync-bilibili-rules.yml
 ├── docs/rules/
 │   ├── google/
 │   ├── youtube/
 │   ├── tiktok/
+│   ├── bilibili/
 │   └── media/
 ├── patches/
 │   ├── google/
 │   ├── youtube/
-│   └── tiktok/
+│   ├── tiktok/
+│   └── bilibili/
 ├── references/google/
 │   └── official-core.txt
 ├── reports/
 │   ├── google/
 │   ├── youtube/
-│   └── tiktok/
+│   ├── tiktok/
+│   └── bilibili/
 ├── rules/
 │   ├── Google/Google.list
 │   ├── YouTube/YouTube.list
-│   └── TikTok/TikTok.list
+│   ├── TikTok/TikTok.list
+│   └── BiliBili/BiliBili.list
 ├── scripts/
 │   ├── google/build_google_rules.py
 │   └── media/build_media_rules.py
@@ -135,6 +143,7 @@ python3 -m unittest discover -s tests/media -v
 python3 scripts/google/build_google_rules.py --fetch
 python3 scripts/media/build_media_rules.py --product youtube --fetch
 python3 scripts/media/build_media_rules.py --product tiktok --fetch
+python3 scripts/media/build_media_rules.py --product bilibili --fetch
 ```
 
 构建器会先把产物写入临时目录，全部校验通过后才替换对应 `rules/` 和 `reports/` 文件。下载、解析、核心域名或数量变化保护失败时，现有产物不会被覆盖。
@@ -150,6 +159,7 @@ python3 scripts/media/build_media_rules.py --product tiktok --fetch
 - Google：新增不超过 20 条、真实变动不超过 2%；超过 10% 停止构建。
 - YouTube：新增不超过 5 条、真实变动不超过 3%；超过 15% 停止构建。
 - TikTok：新增不超过 2 条、真实变动不超过 8%；超过 20% 停止构建。
+- BiliBili：新增不超过 3 条、真实变动不超过 6%；超过 20% 停止构建。
 - 任意删除、不支持语法变化或 Sukka 核心覆盖差距增加都会保留 PR；核心域名消失时直接停止构建。
 
 ## 发布边界
@@ -166,6 +176,7 @@ python3 scripts/media/build_media_rules.py --product tiktok --fetch
 https://raw.githubusercontent.com/schmidttt/Surge-Rules/main/rules/Google/Google.list
 https://raw.githubusercontent.com/schmidttt/Surge-Rules/main/rules/YouTube/YouTube.list
 https://raw.githubusercontent.com/schmidttt/Surge-Rules/main/rules/TikTok/TikTok.list
+https://raw.githubusercontent.com/schmidttt/Surge-Rules/main/rules/BiliBili/BiliBili.list
 ```
 
 ## 本地审核基线（2026-07-21，Asia/Shanghai）
@@ -189,3 +200,11 @@ https://raw.githubusercontent.com/schmidttt/Surge-Rules/main/rules/TikTok/TikTok
 - `TikTok.list`：40 条，其中 v2fly 37 条，本地显式补充 3 条；Sukka 12 条域名规则覆盖 10 条，剩余 2 条继续观察。
 - 两份列表重复构建均为 0 新增、0 删除；表头使用 v2fly 提交时间的北京时间，文件末尾无额外换行。
 - BlackMatrix7 和 Sukka 的具体独有条目不会写入公开报告或自动合并；完整性差异只保留聚合数量。
+
+## BiliBili 本地审核基线（2026-07-22，Asia/Shanghai）
+
+- v2fly 固定提交：`b086c38db74b626c0a24fdd8ed41e33515577bf9`。
+- `BiliBili.list`：55 条，其中 v2fly 53 条，本地显式补充 2 条国际版地区检测主机。
+- Sukka Bilibili International 的 5 条域名规则全部覆盖；其进程规则只计入 unsupported 类型，不写入正式产物。
+- BlackMatrix7 域名类对照 115 条、精确共同 49 条；其 IP、进程、User-Agent 和独有条目不会自动合并。
+- 重复构建为 0 新增、0 删除；表头使用 v2fly 提交时间的北京时间，文件末尾无额外换行。

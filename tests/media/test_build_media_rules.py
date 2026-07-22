@@ -43,6 +43,15 @@ class ParserTests(unittest.TestCase):
         self.assertIn(("full", "manual.tiktok.example"), identities)
         self.assertNotIn(("domain", "musical.ly"), identities)
 
+    def test_bilibili_expands_cdn_and_game_lists(self):
+        config = replace(MODULE.PRODUCTS["bilibili"], minimum_rules=1)
+        rules, _, _ = MODULE.build_product_rules(self.tree, config, [], [])
+        identities = {rule.identity for rule in rules}
+        self.assertIn(("domain", "bilibili.com"), identities)
+        self.assertIn(("domain", "bilivideo.com"), identities)
+        self.assertIn(("domain", "biligame.com"), identities)
+        self.assertIn(("full", "upos-hz-mirrorakam.akamaized.net"), identities)
+
     def test_sukka_parser_ignores_comments_and_counts_other_types(self):
         text = (FIXTURE_ROOT / "Sukka-stream.ts").read_text(encoding="utf-8")
         rules, unsupported = MODULE.parse_sukka_service(text, "TIKTOK")
@@ -158,7 +167,7 @@ class SafetyTests(unittest.TestCase):
 
 
 class IntegrationTests(unittest.TestCase):
-    def test_local_build_writes_both_products(self):
+    def test_local_build_writes_all_products(self):
         originals = dict(MODULE.PRODUCTS)
         try:
             MODULE.PRODUCTS["youtube"] = replace(
@@ -167,9 +176,12 @@ class IntegrationTests(unittest.TestCase):
             MODULE.PRODUCTS["tiktok"] = replace(
                 MODULE.PRODUCTS["tiktok"], minimum_rules=1
             )
+            MODULE.PRODUCTS["bilibili"] = replace(
+                MODULE.PRODUCTS["bilibili"], minimum_rules=1
+            )
             with tempfile.TemporaryDirectory() as temp_dir:
                 root = Path(temp_dir)
-                for product in ("youtube", "tiktok"):
+                for product in ("youtube", "tiktok", "bilibili"):
                     patch_dir = root / "patches" / product
                     patch_dir.mkdir(parents=True)
                     (patch_dir / "include.txt").write_text("", encoding="utf-8")
@@ -191,6 +203,7 @@ class IntegrationTests(unittest.TestCase):
 
                 self.assertTrue((root / "rules/YouTube/YouTube.list").is_file())
                 self.assertTrue((root / "rules/TikTok/TikTok.list").is_file())
+                self.assertTrue((root / "rules/BiliBili/BiliBili.list").is_file())
                 audit = json.loads(
                     (root / "reports/tiktok/reference-audit.json").read_text(
                         encoding="utf-8"

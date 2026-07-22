@@ -20,3 +20,15 @@ const YOUTUBE: StreamService = {
     'USER-AGENT,YouTube*'
   ]
 };
+
+const BILIBILI_INTL: StreamService = {
+  name: 'Bilibili International',
+  rules: [
+    'DOMAIN-SUFFIX,biliintl.com',
+    'DOMAIN,apm-misaka.biliapi.net',
+    'DOMAIN,upos-bstar-mirrorakam.akamaized.net',
+    'DOMAIN,upos-bstar1-mirrorakam.akamaized.net',
+    'DOMAIN-SUFFIX,bilibili.tv',
+    'PROCESS-NAME,com.bstar.intl'
+  ]
+};

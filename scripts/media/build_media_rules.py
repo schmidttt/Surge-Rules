@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build reviewable Surge YouTube or TikTok rules from v2fly data.
+"""Build reviewable Surge YouTube, TikTok, or BiliBili rules from v2fly data.
 
 v2fly/domain-list-community is the only formal upstream. BlackMatrix7 and
 SukkaW are fetched only for aggregate comparison and are never merged into the
@@ -92,6 +92,26 @@ PRODUCTS: Dict[str, ProductConfig] = {
         minimum_rules=20,
         auto_merge_max_additions=2,
         auto_merge_max_change_ratio=0.08,
+        max_build_change_ratio=0.20,
+    ),
+    "bilibili": ProductConfig(
+        key="bilibili",
+        display_name="BiliBili",
+        v2fly_list="bilibili",
+        blackmatrix_path="rule/Surge/BiliBili/BiliBili.list",
+        sukka_constant="BILIBILI_INTL",
+        core_suffixes=frozenset(
+            {
+                "biliapi.com",
+                "bilibili.com",
+                "bilibili.tv",
+                "biliintl.com",
+                "bilivideo.com",
+            }
+        ),
+        minimum_rules=45,
+        auto_merge_max_additions=3,
+        auto_merge_max_change_ratio=0.06,
         max_build_change_ratio=0.20,
     ),
 }

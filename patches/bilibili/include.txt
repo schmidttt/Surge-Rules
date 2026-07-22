@@ -1,0 +1,5 @@
+# 补充 v2fly 遗漏的 BiliBili 域名。普通域名/domain: 代表后缀，full: 代表精确主机。
+# 2026-07-22：以下两个国际版视频主机同时被 Sukka 与 BlackMatrix7 收录；
+# Sukka 明确标注其中 bstar1 主机用于地区限制判断，因此作为精确人工补丁纳入。
+full:upos-bstar-mirrorakam.akamaized.net
+full:upos-bstar1-mirrorakam.akamaized.net

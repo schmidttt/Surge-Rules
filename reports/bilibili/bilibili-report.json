@@ -1,0 +1,30 @@
+{
+  "counts": {
+    "exclude_patch": 0,
+    "include_patch": 2,
+    "not_cn_tagged_in_source": 4,
+    "output": 55,
+    "source_expanded": 53,
+    "source_unique": 53
+  },
+  "product": "BiliBili",
+  "safety": {
+    "actual_change_ratio": 0.0,
+    "auto_merge_eligible": true,
+    "blackmatrix_auto_merged": false,
+    "formal_upstream": "v2fly/domain-list-community",
+    "routing_policy_embedded": false,
+    "source_attributes_retained": true,
+    "sukka_auto_merged": false,
+    "surge_config_modified": false
+  },
+  "schema_version": 1,
+  "unsupported_omitted": [],
+  "v2fly": {
+    "commit": "b086c38db74b626c0a24fdd8ed41e33515577bf9",
+    "committed_at": "2026-07-21T14:59:07Z",
+    "list": "bilibili",
+    "repository": "v2fly/domain-list-community",
+    "requested_ref": "master"
+  }
+}
