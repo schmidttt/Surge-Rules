@@ -103,7 +103,14 @@ jobs:
           Review guide: docs/rules/google/REVIEW_CHECKLIST.md
           EOF
 
-          if PR_URL=$(gh pr view "$REVIEW_BRANCH" --json url --jq .url 2>/dev/null); then
+          PR_URL=$(gh pr list \
+            --base "$BASE_BRANCH" \
+            --head "$REVIEW_BRANCH" \
+            --state open \
+            --json url \
+            --jq '.[0].url // ""')
+
+          if [ -n "$PR_URL" ]; then
             gh pr edit "$PR_URL" --body-file /tmp/google-rules-pr.md
           else
             PR_URL=$(gh pr create \
