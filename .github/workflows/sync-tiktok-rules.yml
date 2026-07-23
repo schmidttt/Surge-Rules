@@ -22,6 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      issues: write
       pull-requests: write
 
     steps:
@@ -114,6 +115,23 @@ jobs:
               --body-file /tmp/tiktok-rules-pr.md)
           fi
           echo "url=$PR_URL" >> "$GITHUB_OUTPUT"
+
+      - name: Notify repository owner for risky refresh
+        if: >-
+          steps.changes.outputs.changed == 'true' &&
+          steps.risk.outputs.classification == 'review-required'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 scripts/shared/notify_review.py \
+            --repository "${{ github.repository }}" \
+            --pr-url "${{ steps.review_pr.outputs.url }}" \
+            --reviewer "${{ github.repository_owner }}" \
+            --product "TikTok" \
+            --assessment reports/tiktok/change-assessment.json \
+            --evidence reports/tiktok/tiktok-report.json \
+            --evidence reports/tiktok/reference-audit.json \
+            --review-guide docs/rules/media/REVIEW_CHECKLIST.md
 
       - name: Auto-merge low-risk refresh
         if: >-

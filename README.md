@@ -129,6 +129,7 @@ Surge 中必须先引用 GameCN。
 - 只读参考源已覆盖、单一来源差异和已确认例外由程序自动处理；
 - 两个以上参考源共同指出但无法确认的差异才进入人工审核；
 - 人工审核集合发生变化会阻止对应规则的低风险自动合并；
+- `review-required` PR 会向仓库所有者请求审核，并按风险指纹去重通知；
 - GoogleAI 与 AI 的父子域覆盖、AI 中的 Google/国内 AI 泄漏会直接失败；
 - 证据目录无效或精确主机决定没有落实到产物会直接失败；
 - GoogleCN 新的模糊候选不会发布，并会阻止自动合并；
@@ -183,6 +184,7 @@ surge-rules/
 ├── scripts/
 │   ├── shared/v2fly.py
 │   ├── shared/reference_verifier.py
+│   ├── shared/notify_review.py
 │   ├── google/build_google_rules.py
 │   ├── googlecn/build_googlecn_rules.py
 │   ├── ai/build_ai_rules.py

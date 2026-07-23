@@ -26,6 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      issues: write
       pull-requests: write
 
     steps:
@@ -125,6 +126,23 @@ jobs:
               --body-file /tmp/google-rules-pr.md)
           fi
           echo "url=$PR_URL" >> "$GITHUB_OUTPUT"
+
+      - name: Notify repository owner for risky refresh
+        if: >-
+          steps.changes.outputs.changed == 'true' &&
+          steps.risk.outputs.classification == 'review-required'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 scripts/shared/notify_review.py \
+            --repository "${{ github.repository }}" \
+            --pr-url "${{ steps.review_pr.outputs.url }}" \
+            --reviewer "${{ github.repository_owner }}" \
+            --product "Google" \
+            --assessment reports/google/change-assessment.json \
+            --evidence reports/google/google-report.json \
+            --evidence reports/google/reference-audit.json \
+            --review-guide docs/rules/google/REVIEW_CHECKLIST.md
 
       - name: Auto-merge low-risk refresh
         if: >-
