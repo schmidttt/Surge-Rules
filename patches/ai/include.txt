@@ -1,0 +1,5 @@
+# 人工批准的非 Google 海外 AI 补充条目；Google 与国内 AI 会被硬门禁拒绝。
+# JetBrains 官方将此精确主机列为 AI Assistant 与 Junie 的网络端点。
+full:api.jetbrains.ai
+# AI.com 当前提供独立 AI 服务；只补精确根主机，不自动扩大到未知子域。
+full:ai.com

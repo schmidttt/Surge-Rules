@@ -38,5 +38,32 @@
       "repository": "SukkaW/Surge",
       "requested_ref": "master"
     }
+  },
+  "verification": {
+    "auto_resolved_count": 31,
+    "catalog_decisions": [],
+    "covered_by_output": {
+      "TikTok": 16
+    },
+    "decision_counts": {
+      "covered": 16,
+      "single-reference-only": 15
+    },
+    "manual_review": [],
+    "manual_review_count": 0,
+    "manual_review_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "persisted_reference_entries": "catalog-and-manual-exceptions-only",
+    "policy": {
+      "corroboration_threshold": 2,
+      "formal_source_output_is_not_modified": true,
+      "network_observations_are_not_a_hard_gate": true,
+      "single_reference_only_is_auto_resolved": true
+    },
+    "reference_rule_count": 31,
+    "schema_version": 1,
+    "source_rule_counts": {
+      "blackmatrix": 29,
+      "sukka": 12
+    }
   }
 }

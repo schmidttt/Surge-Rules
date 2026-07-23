@@ -1,0 +1,157 @@
+{
+  "counts": {
+    "ai_exclude_patch": 0,
+    "ai_include_patch": 2,
+    "ai_output": 128,
+    "domestic_ai_reference": 112,
+    "google_ai_exclude_patch": 0,
+    "google_ai_expanded": 40,
+    "google_ai_include_patch": 1,
+    "google_ai_output": 41,
+    "google_partition_excluded": 40,
+    "overseas_ai_expanded": 167,
+    "overseas_ai_unsupported": 1
+  },
+  "policy": {
+    "domestic_ai_is_not_published": true,
+    "google_ai_must_precede_ai": true,
+    "google_ai_target": "Google",
+    "non_google_overseas_ai_target": "Intelligence",
+    "sukka_is_audit_only": true,
+    "unsupported_rules_are_report_only": true,
+    "v2fly_is_only_generation_source": true
+  },
+  "schema_version": 1,
+  "source": {
+    "sukka_audit": {
+      "commit": "a54fa7ea89f3aa4df2ce61358ab8e7c23e5c7b7a",
+      "committed_at": "2026-07-22T06:15:31Z",
+      "repository": "SukkaW/Surge",
+      "requested_ref": "master"
+    },
+    "v2fly": {
+      "commit": "b086c38db74b626c0a24fdd8ed41e33515577bf9",
+      "committed_at": "2026-07-21T14:59:07Z",
+      "repository": "v2fly/domain-list-community",
+      "requested_ref": "master"
+    }
+  },
+  "sukka_audit": {
+    "available": true,
+    "covered_by_ai": 21,
+    "covered_by_google_ai": 22,
+    "domain_rules": 47,
+    "raw_not_covered_by_output": 4,
+    "uncovered": 0,
+    "unsupported_types": {
+      "DOMAIN-KEYWORD": 2,
+      "URL-REGEX": 1
+    },
+    "verification": {
+      "auto_resolved_count": 47,
+      "catalog_decisions": [
+        {
+          "action": "accept-exact-host",
+          "evidence": [
+            "https://ai.com/"
+          ],
+          "identity": "domain:ai.com",
+          "reason": "the-exact-host-operates-an-independent-ai-agent-service",
+          "sources": [
+            "sukka"
+          ],
+          "target": "AI"
+        },
+        {
+          "action": "accept-exact-host",
+          "evidence": [
+            "https://docs.cloud.google.com/gemini/docs/codeassist/network-access"
+          ],
+          "identity": "domain:cloudcode-pa.googleapis.com",
+          "reason": "google-documents-this-as-an-exact-gemini-code-assist-endpoint",
+          "sources": [
+            "sukka"
+          ],
+          "target": "GoogleAI"
+        },
+        {
+          "action": "accept-exact-host",
+          "evidence": [
+            "https://g.ai/"
+          ],
+          "identity": "domain:g.ai",
+          "reason": "the-exact-host-redirects-to-a-google-ai-search-entry",
+          "sources": [
+            "sukka"
+          ],
+          "target": "GoogleAI"
+        },
+        {
+          "action": "exclude-shared-service",
+          "evidence": [
+            "https://docs.github.com/en/rest"
+          ],
+          "identity": "full:api.github.com",
+          "reason": "github-rest-api-is-shared-by-copilot-and-non-ai-github-features",
+          "sources": [
+            "sukka"
+          ],
+          "target": null
+        }
+      ],
+      "covered_by_output": {
+        "AI": 21,
+        "GoogleAI": 22
+      },
+      "decision_counts": {
+        "accept-exact-host": 3,
+        "covered": 43,
+        "exclude-shared-service": 1
+      },
+      "manual_review": [],
+      "manual_review_count": 0,
+      "manual_review_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "persisted_reference_entries": "catalog-and-manual-exceptions-only",
+      "policy": {
+        "corroboration_threshold": 2,
+        "formal_source_output_is_not_modified": true,
+        "network_observations_are_not_a_hard_gate": true,
+        "single_reference_only_is_auto_resolved": true
+      },
+      "reference_rule_count": 47,
+      "schema_version": 1,
+      "source_rule_counts": {
+        "sukka": 47
+      }
+    }
+  },
+  "unsupported_omitted": [
+    {
+      "identity": "regexp:^chatgpt-async-webps-prod-\\S+-\\d+\\.webpubsub\\.azure\\.com$",
+      "reason": "unsupported-overseas-ai-regexp",
+      "source": "category-ai-!cn"
+    }
+  ],
+  "verification": {
+    "auto_resolved_count": 209,
+    "automatic_decision_counts": {
+      "excluded-domestic-partition": 0,
+      "excluded-google-partition": 40,
+      "published-ai": 128,
+      "published-googleai": 41
+    },
+    "manual_review": [
+      {
+        "identity": "regexp:^chatgpt-async-webps-prod-\\S+-\\d+\\.webpubsub\\.azure\\.com$",
+        "reason": "unsupported-overseas-ai-regexp",
+        "source": "category-ai-!cn"
+      }
+    ],
+    "manual_review_count": 1,
+    "manual_review_fingerprint": "6321950582e4c2b6e233e0e727de5ac55610306594fe4562fdc1d38814ec200b",
+    "policy": {
+      "only_unresolved_candidates_require_manual_review": true
+    },
+    "schema_version": 1
+  }
+}

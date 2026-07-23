@@ -36,7 +36,11 @@ BlackMatrix7 的 `Google.list` 只用于报告：
 Google AI → YouTube → 剩余 Google → needs_review
 ```
 
-分类只以总量和各分类数量写入 `reports/google/reference-audit.json`，不会保存 Sukka 的具体规则条目，也不会写入规则产物。Sukka 的 `GLOBAL.GOOGLE` 服务其个人 DNS/global 逻辑，包含 YouTube 和特殊运行归类，因此不能作为全量 Google 真值表。
+分类统计写入 `reports/google/reference-audit.json`，不会把 Sukka 的条目
+直接写入规则产物。统一验证只持久化已有证据的例外和多个参考源共同指出
+的未决最小集合，不保存完整第三方规则。Sukka 的 `GLOBAL.GOOGLE` 服务其
+个人 DNS/global 逻辑，包含 YouTube 和特殊运行归类，因此不能作为全量
+Google 真值表。
 
 `references/google/official-core.txt` 来自 Google Cloud 和 ChromeOS 产品级官方文档。它只用于核心覆盖断言：任一断言无法被上述三层产品体系覆盖时，构建失败。它不是、也不会被描述为 Google 全生态完整列表。
 
@@ -97,16 +101,19 @@ google 根列表
 
 从扁平规则文件中删除 `DOMAIN,gemini.google.com`，不能消除 `DOMAIN-SUFFIX,google.com` 对它的覆盖。因此三个产品集合只能做到“精确条目尽量分离”，最终边界仍由 Surge 首次命中顺序保证。
 
-未来接入 Surge 时建议顺序为：
+接入 Surge 时建议顺序为：
 
 ```ini
-# 仅示意，不是本项目对现有配置的修改
-RULE-SET,<Gemini规则地址>,<Gemini策略>,extended-matching
+RULE-SET,<GoogleAI.list地址>,🔍 Google,extended-matching
+RULE-SET,<AI.list地址>,🤖 Intelligence,extended-matching
 RULE-SET,<YouTube规则地址>,📹 YouTube,extended-matching
-RULE-SET,<本项目Google.list地址>,<待确认策略>,extended-matching
+RULE-SET,<本项目Google.list地址>,🔍 Google,extended-matching
 ```
 
-`Google.list` 最终指向独立 `🔍 Google` 还是已有的海外策略，是后续配置设计决策；生成器不预设答案。
+`GoogleAI.list` 和 `Google.list` 都指向 `🔍 Google`，因此 Gemini 与
+Google 验证跳转天然使用同一出口。非 Google 海外 AI 由 `AI.list`
+交给 `🤖 Intelligence`。具体生成边界见
+[`../ai/DESIGN.md`](../ai/DESIGN.md)。
 
 ## 5. 失败保护
 
@@ -120,7 +127,7 @@ RULE-SET,<本项目Google.list地址>,<待确认策略>,extended-matching
 - 未支持的 keyword/regexp 数量和类型是否被记录；
 - 核心后缀 `google.com`、`googleapis.com`、`gstatic.com` 是否仍在剩余 Google 中；
 - Google 官方产品核心断言是否全部被三层产品体系覆盖；
-- Sukka 参考项的分类总量和待审核数量是否异常；
+- Sukka 与 BlackMatrix7 的统一参考验证是否产生新的人工审核项；
 - 与现有产物相比，条目数量是否变化超过阈值（默认 10%）。
 
 首次生成时没有旧产物，因此跳过变化率检查。以后遇到超过阈值的变化，构建失败，旧文件保持不变；需要人工确认后使用 `--allow-large-change` 重新生成。
@@ -152,11 +159,10 @@ cron: "0 4 * * 2,4,6"
 
 两者都使用 `timezone: "Asia/Shanghai"`。两周观察结束后，只需把仓库变量设为 `SYNC_PHASE=stable`；工作流会跳过每天触发，只在周二、周四、周六执行。Surge 端以后仍可保留 `update-interval=86400`，它只负责每天检查远程文件是否变化。
 
-## 7. 发布前仍需用户确认
+## 7. 已确认的运行边界
 
-1. 仓库名称、可见性和所有者；
-2. 是否接受 v2fly 作为唯一正式源；
-3. Gemini 规则最终使用 Sukka、v2fly 子表还是个人 override；
-4. `Google.list` 最终指向哪个策略组；
-5. 是否在观察期启用每天同步；
-6. GitHub 仓库中是否允许 Actions 创建分支和 PR。
+- v2fly 是唯一正式生成来源；
+- GoogleAI 使用 v2fly `google-deepmind`；
+- GoogleAI 与 Google 都指向 `🔍 Google`；
+- Sukka 与其他对照源只参与审计；
+- 同步更新先进入 PR，低风险自动合并由独立仓库变量控制。

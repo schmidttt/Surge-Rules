@@ -1,0 +1,28 @@
+# GoogleAI / AI 自动审查报告
+
+- v2fly 提交：`b086c38db74b626c0a24fdd8ed41e33515577bf9`
+- Sukka 对照提交：`a54fa7ea89f3aa4df2ce61358ab8e7c23e5c7b7a`
+- 自动结论：`review-required`
+- `GoogleAI.list`：41 条
+- `AI.list`：128 条
+- 国内 AI 参考集合：112 条（不发布）
+- 无法安全转换或需要隔离：1 条
+
+## 路由目标
+
+- `GoogleAI.list` 包含 Google DeepMind、Gemini、AI Studio、NotebookLM、Jules 等 Google 自有 AI 域名，固定指向 `🔍 Google`。
+- `AI.list` 仅包含非 Google 的海外 AI 服务，指向 `🤖 Intelligence`。
+- `category-ai-cn` 仅作为排除与审计边界，不进入海外 AI 表。
+- `GoogleAI.list` 必须位于 `AI.list` 之前；两份产物不得有父子域覆盖。
+
+## Sukka 设计对照
+
+- Sukka 的 `ai.conf` 是人工维护的混合 AI 表，本项目只用它检查覆盖情况，不直接合并条目。
+- 对照域名规则：47 条；GoogleAI 覆盖：22；AI 覆盖：21；原始范围差异：4；仍需人工：0。
+- Sukka 非域名类型：`{'DOMAIN-KEYWORD': 2, 'URL-REGEX': 1}`。
+
+## 隔离条目
+
+| 来源 | 条目 | 原因 |
+|---|---|---|
+| `category-ai-!cn` | `regexp:^chatgpt-async-webps-prod-\S+-\d+\.webpubsub\.azure\.com$` | `unsupported-overseas-ai-regexp` |

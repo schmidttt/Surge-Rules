@@ -31,6 +31,7 @@ from shared.v2fly import (  # noqa: E402
     rule_to_surge,
     write_staged_outputs,
 )
+from shared.reference_verifier import summarize_generation_decisions  # noqa: E402
 
 
 PLATFORMS = ("epicgames", "playstation", "steam", "nintendo")
@@ -391,6 +392,16 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         report_details["unsupported_omitted"],
         previous_unsupported,
     )
+    verification = summarize_generation_decisions(
+        {
+            "published-game": len(game_rules),
+            "published-gamecn": len(cn_rules),
+            "resolved-by-rule-order": report_details["counts"][
+                "gamecn_covered_by_game_parent_count"
+            ],
+        },
+        report_details["unsupported_omitted"],
+    )
     report = {
         "schema_version": 1,
         "source": {
@@ -407,6 +418,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             "game_download_output_created": False,
             "gamecn_must_precede_game": True,
         },
+        "verification": verification,
         **report_details,
     }
     files = {

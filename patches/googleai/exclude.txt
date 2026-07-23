@@ -1,0 +1,1 @@
+# 人工排除的 Google AI 条目；不能用于把 Google 域名转入 AI.list。

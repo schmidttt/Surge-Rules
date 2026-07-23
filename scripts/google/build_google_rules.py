@@ -26,6 +26,18 @@ from pathlib import Path
 from typing import DefaultDict, Dict, FrozenSet, Iterable, List, Mapping, Optional, Sequence, Set, Tuple
 
 
+SCRIPTS_ROOT = Path(__file__).resolve().parents[1]
+if str(SCRIPTS_ROOT) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS_ROOT))
+
+from shared.reference_verifier import (  # noqa: E402
+    ReferenceVerificationError,
+    load_resolution_catalog,
+    summarize_generation_decisions,
+    verify_reference_sources,
+)
+
+
 V2FLY_REPOSITORY = "v2fly/domain-list-community"
 V2FLY_DEFAULT_REF = "master"
 BLACKMATRIX_REPOSITORY = "blackmatrix7/ios_rule_script"
@@ -419,6 +431,14 @@ def parse_existing_generated(path: Path) -> Set[Tuple[str, str]]:
     return rules
 
 
+def load_published_rules(path: Path, fallback: Sequence[Rule]) -> List[Rule]:
+    """Use the repository's actual product output when it already exists."""
+    existing = parse_existing_generated(path)
+    if not existing:
+        return list(fallback)
+    return [Rule(kind, value) for kind, value in sorted(existing)]
+
+
 def load_existing_unsupported(path: Path) -> Optional[Set[str]]:
     if not path.exists():
         return None
@@ -432,25 +452,47 @@ def load_existing_unsupported(path: Path) -> Optional[Set[str]]:
     return set(values)
 
 
-def load_existing_sukka_gaps(path: Path) -> Optional[Dict[str, int]]:
+def load_existing_sukka_gaps(path: Path) -> Optional[Dict[str, object]]:
     if not path.exists():
         return None
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
+        if "verification" in payload:
+            return {
+                "manual_review": int(
+                    payload["verification"]["manual_review_count"]
+                ),
+                "manual_review_fingerprint": str(
+                    payload["verification"]["manual_review_fingerprint"]
+                ),
+            }
         sukka = payload["sukka"]
         gaps = {
-            "global_google": int(
+            "manual_review": int(
                 sukka["global_google"]["counts"]["needs_review"]
-            ),
-            "google_ai": int(sukka["google_ai"]["counts"]["needs_review"]),
+            )
+            + int(sukka["google_ai"]["counts"]["needs_review"]),
         }
     except (KeyError, OSError, TypeError, ValueError, json.JSONDecodeError):
         return None
     return gaps
 
 
-def current_sukka_gaps(reference_audit: Mapping[str, object]) -> Optional[Dict[str, int]]:
+def current_sukka_gaps(
+    reference_audit: Mapping[str, object],
+) -> Optional[Dict[str, object]]:
     try:
+        if "verification" in reference_audit:
+            return {
+                "manual_review": int(
+                    reference_audit["verification"]["manual_review_count"]
+                ),
+                "manual_review_fingerprint": str(
+                    reference_audit["verification"][
+                        "manual_review_fingerprint"
+                    ]
+                ),
+            }
         sukka = reference_audit["sukka"]
         return {
             "global_google": int(
@@ -474,8 +516,8 @@ def assess_change(
     max_auto_additions: int,
     max_auto_change_ratio: float,
     max_build_change_ratio: float,
-    sukka_gaps: Optional[Mapping[str, int]] = None,
-    existing_sukka_gaps: Optional[Mapping[str, int]] = None,
+    sukka_gaps: Optional[Mapping[str, object]] = None,
+    existing_sukka_gaps: Optional[Mapping[str, object]] = None,
 ) -> Dict[str, object]:
     new = {rule.identity for rule in main}
     added = new.difference(existing_main)
@@ -500,16 +542,32 @@ def assess_change(
     if unsupported_changed:
         reasons.append("unsupported-rule-set-changed")
     increased_sukka_gaps: Dict[str, Dict[str, int]] = {}
+    manual_review_set_changed = False
     if sukka_gaps is not None and existing_sukka_gaps is not None:
-        for name, current in sukka_gaps.items():
-            previous = existing_sukka_gaps.get(name, 0)
+        current_fingerprint = sukka_gaps.get("manual_review_fingerprint")
+        previous_fingerprint = existing_sukka_gaps.get(
+            "manual_review_fingerprint"
+        )
+        manual_review_set_changed = (
+            isinstance(current_fingerprint, str)
+            and isinstance(previous_fingerprint, str)
+            and current_fingerprint != previous_fingerprint
+        )
+        for name, current_value in sukka_gaps.items():
+            if not isinstance(current_value, int):
+                continue
+            previous_value = existing_sukka_gaps.get(name, 0)
+            previous = previous_value if isinstance(previous_value, int) else 0
+            current = current_value
             if current > previous:
                 increased_sukka_gaps[name] = {
                     "previous": previous,
                     "current": current,
                 }
-        if increased_sukka_gaps:
-            reasons.append("sukka-reference-gap-increased")
+        if manual_review_set_changed:
+            reasons.append("reference-manual-review-set-changed")
+        elif increased_sukka_gaps:
+            reasons.append("reference-manual-review-increased")
 
     auto_merge_eligible = not reasons
     return {
@@ -523,9 +581,10 @@ def assess_change(
         "actual_change_count": change_count,
         "actual_change_ratio": round(change_ratio, 6),
         "unsupported_changed": unsupported_changed,
-        "sukka_reference_gaps": dict(sukka_gaps or {}),
-        "previous_sukka_reference_gaps": dict(existing_sukka_gaps or {}),
-        "increased_sukka_reference_gaps": increased_sukka_gaps,
+        "reference_manual_review": dict(sukka_gaps or {}),
+        "previous_reference_manual_review": dict(existing_sukka_gaps or {}),
+        "increased_reference_manual_review": increased_sukka_gaps,
+        "reference_manual_review_set_changed": manual_review_set_changed,
         "reasons": reasons,
         "added": [identity_to_surge(identity) for identity in sorted(added)],
         "removed": [identity_to_surge(identity) for identity in sorted(removed)],
@@ -893,11 +952,48 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             sukka_ai_unsupported_lines
         )
     else:
+        sukka_global_rules = []
+        sukka_ai_rules = []
         sukka_global_audit = {"status": "not-provided"}
         sukka_ai_audit = {"status": "not-provided"}
 
+    if blackmatrix_text:
+        blackmatrix_identities, _ = parse_surge_domain_rules(blackmatrix_text)
+        blackmatrix_rules = [
+            Rule(kind, value) for kind, value in sorted(blackmatrix_identities)
+        ]
+    else:
+        blackmatrix_rules = []
+    try:
+        resolutions = load_resolution_catalog(
+            project_root / "references/verification/reference-decisions.json",
+            "google",
+        )
+    except ReferenceVerificationError as exc:
+        raise BuildError(str(exc)) from exc
+    published_google_ai = load_published_rules(
+        project_root / "rules/GoogleAI/GoogleAI.list",
+        google_ai_rules,
+    )
+    published_youtube = load_published_rules(
+        project_root / "rules/YouTube/YouTube.list",
+        youtube_rules,
+    )
+    verification = verify_reference_sources(
+        {
+            "blackmatrix": blackmatrix_rules,
+            "sukka_global": sukka_global_rules,
+            "sukka_ai": sukka_ai_rules,
+        },
+        {
+            "GoogleAI": published_google_ai,
+            "YouTube": published_youtube,
+            "Google": main_rules,
+        },
+        resolutions,
+    )
     reference_audit = {
-        "schema_version": 2,
+        "schema_version": 3,
         "policy": {
             "v2fly_is_only_generation_source": True,
             "reference_entries_auto_merged": False,
@@ -913,6 +1009,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             "google_ai": sukka_ai_audit,
         },
         "google_official_core": official_core_audit,
+        "verification": verification,
     }
     existing_sukka_gaps = load_existing_sukka_gaps(
         project_root / "reports/google/reference-audit.json"
@@ -951,6 +1048,16 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         },
         "counts": counts,
         "unsupported_omitted": unsupported_omitted,
+        "verification": summarize_generation_decisions(
+            {"published": len(main_rules)},
+            [
+                {
+                    "identity": value,
+                    "reason": "unsupported-v2fly-syntax",
+                }
+                for value in unsupported_omitted
+            ],
+        ),
         "comparison": comparison_report(main_rules, blackmatrix_text),
         "safety": {
             "blackmatrix_auto_merged": False,

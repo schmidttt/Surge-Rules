@@ -7,19 +7,19 @@
   "baseline_rules": 890,
   "classification": "low-risk",
   "generated_rules": 890,
-  "increased_sukka_reference_gaps": {},
-  "previous_sukka_reference_gaps": {
-    "global_google": 20,
-    "google_ai": 1
+  "increased_reference_manual_review": {},
+  "previous_reference_manual_review": {
+    "manual_review": 21
   },
   "reasons": [],
+  "reference_manual_review": {
+    "manual_review": 12,
+    "manual_review_fingerprint": "26bc009440f0cf5d43019b1d344e700fdb0ea6aed893299b15ca50c029576689"
+  },
+  "reference_manual_review_set_changed": false,
   "removed": [],
   "removed_count": 0,
   "schema_version": 1,
-  "sukka_reference_gaps": {
-    "global_google": 20,
-    "google_ai": 1
-  },
   "thresholds": {
     "automatic_deletions_allowed": false,
     "max_auto_additions": 20,

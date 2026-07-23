@@ -4,6 +4,8 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
+import json
 import re
 import sys
 import urllib.error
@@ -11,16 +13,36 @@ import urllib.request
 from pathlib import Path
 from typing import Dict, List, Optional, Sequence, Tuple
 
+from shared.reference_verifier import (
+    ReferenceVerificationError,
+    load_resolution_catalog,
+)
+
 
 EXPECTED_LISTS = {
     "rules/Google/Google.list": 500,
     "rules/GoogleCN/GoogleCN.list": 20,
+    "rules/GoogleAI/GoogleAI.list": 30,
+    "rules/AI/AI.list": 100,
     "rules/YouTube/YouTube.list": 100,
     "rules/TikTok/TikTok.list": 20,
     "rules/BiliBili/BiliBili.list": 30,
     "rules/Game/Game.list": 150,
     "rules/GameCN/GameCN.list": 20,
 }
+EXPECTED_VERIFICATION_REPORTS = (
+    "reports/google/google-report.json",
+    "reports/google/reference-audit.json",
+    "reports/googlecn/googlecn-report.json",
+    "reports/ai/ai-report.json",
+    "reports/game/game-report.json",
+    "reports/youtube/youtube-report.json",
+    "reports/youtube/reference-audit.json",
+    "reports/tiktok/tiktok-report.json",
+    "reports/tiktok/reference-audit.json",
+    "reports/bilibili/bilibili-report.json",
+    "reports/bilibili/reference-audit.json",
+)
 TEXT_SUFFIXES = {
     ".md",
     ".py",
@@ -133,6 +155,167 @@ def validate_cross_outputs(all_rules: Dict[str, List[str]]) -> None:
             "GoogleCN contains a hard-excluded service: {}".format(forbidden)
         )
 
+    def parsed(rule: str) -> Tuple[str, str]:
+        rule_type, domain = rule.split(",", 1)
+        return rule_type, domain
+
+    def covers(left: str, right: str) -> bool:
+        left_type, left_domain = parsed(left)
+        right_type, right_domain = parsed(right)
+        if left_type == "DOMAIN":
+            return right_type == "DOMAIN" and left_domain == right_domain
+        return (
+            right_domain == left_domain
+            or right_domain.endswith("." + left_domain)
+        )
+
+    def overlap(left: str, right: str) -> bool:
+        return covers(left, right) or covers(right, left)
+
+    google_ai = all_rules["rules/GoogleAI/GoogleAI.list"]
+    ai = all_rules["rules/AI/AI.list"]
+    ai_cross = sorted(
+        "{} <> {}".format(left, right)
+        for left in google_ai
+        for right in ai
+        if overlap(left, right)
+    )
+    if ai_cross:
+        raise ValidationError(
+            "GoogleAI and AI overlap: {}".format(ai_cross[:10])
+        )
+
+    google = all_rules["rules/Google/Google.list"]
+    google_leaks = sorted(
+        rule
+        for rule in ai
+        if any(overlap(rule, google_rule) for google_rule in google)
+    )
+    if google_leaks:
+        raise ValidationError(
+            "AI contains Google-owned coverage: {}".format(google_leaks[:10])
+        )
+
+    required = {
+        "rules/GoogleAI/GoogleAI.list": {
+            "DOMAIN-SUFFIX,gemini.google.com",
+            "DOMAIN-SUFFIX,deepmind.com",
+            "DOMAIN-SUFFIX,generativelanguage.googleapis.com",
+        },
+        "rules/AI/AI.list": {
+            "DOMAIN-SUFFIX,openai.com",
+            "DOMAIN-SUFFIX,chatgpt.com",
+            "DOMAIN-SUFFIX,anthropic.com",
+            "DOMAIN-SUFFIX,claude.ai",
+            "DOMAIN-SUFFIX,perplexity.ai",
+        },
+    }
+    for path, core_rules in required.items():
+        missing = sorted(core_rules.difference(all_rules[path]))
+        if missing:
+            raise ValidationError(
+                "{} is missing core rules: {}".format(path, missing)
+            )
+
+
+def validate_verification_reports(project_root: Path) -> None:
+    def validate_block(path: str, block: object, label: str) -> None:
+        if not isinstance(block, dict):
+            raise ValidationError("{} is missing {}".format(path, label))
+        try:
+            schema = block["schema_version"]
+            automatic = int(block["auto_resolved_count"])
+            manual_count = int(block["manual_review_count"])
+            fingerprint = block["manual_review_fingerprint"]
+            manual = block["manual_review"]
+        except (KeyError, TypeError, ValueError) as exc:
+            raise ValidationError(
+                "{} has an invalid {} block".format(path, label)
+            ) from exc
+        if schema != 1 or automatic < 0 or manual_count < 0:
+            raise ValidationError(
+                "{} has invalid {} counts".format(path, label)
+            )
+        if not isinstance(manual, list) or len(manual) != manual_count:
+            raise ValidationError(
+                "{} has mismatched {} manual entries".format(path, label)
+            )
+        try:
+            manual_identities = [str(item["identity"]) for item in manual]
+        except (KeyError, TypeError) as exc:
+            raise ValidationError(
+                "{} has invalid {} manual entries".format(path, label)
+            ) from exc
+        if len(set(manual_identities)) != len(manual_identities):
+            raise ValidationError(
+                "{} has duplicate {} manual entries".format(path, label)
+            )
+        expected_fingerprint = hashlib.sha256(
+            "\n".join(sorted(manual_identities)).encode("utf-8")
+        ).hexdigest()
+        if not isinstance(fingerprint, str) or not re.fullmatch(
+            r"[0-9a-f]{64}",
+            fingerprint,
+        ):
+            raise ValidationError(
+                "{} has invalid {} fingerprint".format(path, label)
+            )
+        if fingerprint != expected_fingerprint:
+            raise ValidationError(
+                "{} has stale {} fingerprint".format(path, label)
+            )
+        automatic_counts = block.get("automatic_decision_counts")
+        if isinstance(automatic_counts, dict):
+            try:
+                decision_total = sum(
+                    int(value) for value in automatic_counts.values()
+                )
+            except (TypeError, ValueError) as exc:
+                raise ValidationError(
+                    "{} has invalid {} automatic counts".format(path, label)
+                ) from exc
+            if decision_total != automatic:
+                raise ValidationError(
+                    "{} has mismatched {} automatic counts".format(path, label)
+                )
+        reference_total = block.get("reference_rule_count")
+        if isinstance(reference_total, int) and (
+            automatic + manual_count != reference_total
+        ):
+            raise ValidationError(
+                "{} has mismatched {} reference total".format(path, label)
+            )
+
+    for relative in EXPECTED_VERIFICATION_REPORTS:
+        path = project_root / relative
+        if not path.is_file():
+            raise ValidationError(
+                "Missing verification report: {}".format(relative)
+            )
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            raise ValidationError(
+                "Invalid verification report JSON: {}".format(relative)
+            ) from exc
+        validate_block(relative, payload.get("verification"), "verification")
+        if relative == "reports/ai/ai-report.json":
+            sukka = payload.get("sukka_audit")
+            if not isinstance(sukka, dict):
+                raise ValidationError("{} is missing Sukka audit".format(relative))
+            validate_block(
+                relative,
+                sukka.get("verification"),
+                "Sukka verification",
+            )
+    try:
+        load_resolution_catalog(
+            project_root / "references/verification/reference-decisions.json",
+            "google",
+        )
+    except ReferenceVerificationError as exc:
+        raise ValidationError(str(exc)) from exc
+
 
 def check_remote_ref(project_root: Path, ref: str) -> None:
     for relative in EXPECTED_LISTS:
@@ -179,6 +362,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     validate_lowercase_repository_name(project_root)
     validate_raw_links(project_root)
     validate_cross_outputs(all_rules)
+    validate_verification_reports(project_root)
     if args.check_remote_ref:
         check_remote_ref(project_root, args.check_remote_ref)
     print(

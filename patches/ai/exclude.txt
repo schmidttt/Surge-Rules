@@ -1,0 +1,1 @@
+# 人工排除的海外 AI 条目；使用 v2fly domain/full 语法。

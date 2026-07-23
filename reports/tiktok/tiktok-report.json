@@ -27,5 +27,18 @@
     "list": "tiktok",
     "repository": "v2fly/domain-list-community",
     "requested_ref": "master"
+  },
+  "verification": {
+    "auto_resolved_count": 40,
+    "automatic_decision_counts": {
+      "published": 40
+    },
+    "manual_review": [],
+    "manual_review_count": 0,
+    "manual_review_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "policy": {
+      "only_unresolved_candidates_require_manual_review": true
+    },
+    "schema_version": 1
   }
 }
