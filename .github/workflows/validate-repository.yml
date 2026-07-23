@@ -1,0 +1,40 @@
+name: Validate repository
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Check out exact source commit
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Run all offline tests
+        run: |
+          python3 -m unittest discover -s tests/google -v
+          python3 -m unittest discover -s tests/googlecn -v
+          python3 -m unittest discover -s tests/game -v
+          python3 -m unittest discover -s tests/media -v
+
+      - name: Validate generated files and repository links
+        run: python3 scripts/validate_repository.py
+
+      - name: Validate raw files at this exact commit
+        run: >-
+          python3 scripts/validate_repository.py
+          --check-remote-ref "${{ github.event.pull_request.head.sha || github.sha }}"

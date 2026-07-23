@@ -38,10 +38,13 @@ jobs:
       - name: Run offline tests
         run: python3 -m unittest discover -s tests/media -v
 
-      - name: Build from pinned upstream commits
+      - name: Resolve and pin current upstream commits
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: python3 scripts/media/build_media_rules.py --product youtube --fetch
+
+      - name: Validate repository
+        run: python3 scripts/validate_repository.py
 
       - name: Show generated changes
         run: git diff --check && git diff --stat

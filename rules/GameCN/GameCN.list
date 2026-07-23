@@ -1,0 +1,36 @@
+# NAME: schmidttt's GameCN Ruleset
+# AUTHOR: schmidttt
+# REPO: https://github.com/schmidttt/surge-rules
+# UPDATED: 2026.07.21 22:59:07
+# TOTAL: 29
+#
+# ======== 上游同步规则 ========
+DOMAIN,alibaba.cdn.steampipe.steamcontent.com
+DOMAIN,client-update.queniuqe.com
+DOMAIN,csgo.wmsj.cn
+DOMAIN,dl.steam.clngaa.com
+DOMAIN,dota2.wmsj.cn
+DOMAIN,gstore.val.manlaxy.com
+DOMAIN,lv.queniujq.cn
+DOMAIN,st.dl.bscstorage.net
+DOMAIN,st.dl.eccdnx.com
+DOMAIN,st.dl.pinyuncloud.com
+DOMAIN,steampowered.com.8686c.com
+DOMAIN,steamstatic.com.8686c.com
+DOMAIN,xz.pphimalayanrt.com
+DOMAIN-SUFFIX,csgo.com.cn
+DOMAIN-SUFFIX,dota2.com.cn
+DOMAIN-SUFFIX,legendofzelda.cn
+DOMAIN-SUFFIX,legendofzelda.com.cn
+DOMAIN-SUFFIX,mariokart.cn
+DOMAIN-SUFFIX,mariokart.com.cn
+DOMAIN-SUFFIX,miitomo.com.cn
+DOMAIN-SUFFIX,nintendolabo.cn
+DOMAIN-SUFFIX,nintendoswitch.cn
+DOMAIN-SUFFIX,nintendoswitch.com.cn
+DOMAIN-SUFFIX,steamchina.com
+DOMAIN-SUFFIX,supermariobros.com.cn
+DOMAIN-SUFFIX,supersmashbros.cn
+DOMAIN-SUFFIX,supersmashbros.com.cn
+DOMAIN-SUFFIX,wmsjsteam.com
+DOMAIN-SUFFIX,xn--mts47c3w9b1qr.cn

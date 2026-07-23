@@ -1,0 +1,79 @@
+{
+  "counts": {
+    "game_exclude_patch": 0,
+    "game_include_patch": 0,
+    "game_output": 187,
+    "gamecn_covered_by_game_parent_count": 1,
+    "gamecn_exclude_patch": 0,
+    "gamecn_include_patch": 0,
+    "gamecn_output": 29
+  },
+  "gamecn_covered_by_game_parent": [
+    "DOMAIN,alibaba.cdn.steampipe.steamcontent.com"
+  ],
+  "modules": {
+    "epicgames": {
+      "cn_tagged": 2,
+      "expanded": 32,
+      "unsupported_cn": 2,
+      "unsupported_global": 1
+    },
+    "nintendo": {
+      "cn_tagged": 12,
+      "expanded": 124
+    },
+    "playstation": {
+      "expanded": 4,
+      "single_label_omitted": 1
+    },
+    "steam": {
+      "cn_tagged": 17,
+      "expanded": 60
+    }
+  },
+  "policy": {
+    "final_outputs_follow_policy_targets": [
+      "Game",
+      "GameCN"
+    ],
+    "game_download_output_created": false,
+    "gamecn_must_precede_game": true,
+    "gamecn_uses_exact_hosts_for_non_root_entries": true,
+    "platforms_are_internal_modules": [
+      "epicgames",
+      "playstation",
+      "steam",
+      "nintendo"
+    ],
+    "v2fly_is_only_generation_source": true
+  },
+  "schema_version": 1,
+  "source": {
+    "commit": "b086c38db74b626c0a24fdd8ed41e33515577bf9",
+    "committed_at": "2026-07-21T14:59:07Z",
+    "repository": "v2fly/domain-list-community",
+    "requested_ref": "master"
+  },
+  "unsupported_omitted": [
+    {
+      "identity": "regexp:^cdn\\d-epicgames-\\d+\\.file\\.myqcloud\\.com$",
+      "platform": "epicgames",
+      "reason": "unsupported-cn-regexp"
+    },
+    {
+      "identity": "regexp:^epicgames-download\\d-\\d+\\.file\\.myqcloud\\.com$",
+      "platform": "epicgames",
+      "reason": "unsupported-cn-regexp"
+    },
+    {
+      "identity": "regexp:^epicgames-download\\d\\.akamaized\\.net$",
+      "platform": "epicgames",
+      "reason": "unsupported-global-regexp"
+    },
+    {
+      "identity": "domain:playstation",
+      "platform": "playstation",
+      "reason": "single-label-domain-omitted"
+    }
+  ]
+}

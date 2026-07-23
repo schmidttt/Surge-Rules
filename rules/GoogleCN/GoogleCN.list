@@ -1,0 +1,42 @@
+# NAME: schmidttt's GoogleCN Ruleset
+# AUTHOR: schmidttt
+# REPO: https://github.com/schmidttt/surge-rules
+# UPDATED: 2026.07.21 22:59:07
+# TOTAL: 35
+#
+# ======== 上游同步规则 ========
+DOMAIN,c.pki.goog
+DOMAIN,cache.pack.google.com
+DOMAIN,connectivitycheck.gstatic.com
+DOMAIN,crl.pki.goog
+DOMAIN,crls.pki.goog
+DOMAIN,dl.google.com
+DOMAIN,dl.l.google.com
+DOMAIN,download.mlcc.google.com
+DOMAIN,download.tensorflow.google.com
+DOMAIN,fontfiles.googleapis.com
+DOMAIN,fonts.googleapis.com
+DOMAIN,fonts.gstatic.com
+DOMAIN,g0.gstatic.com
+DOMAIN,g1.gstatic.com
+DOMAIN,g2.gstatic.com
+DOMAIN,g3.gstatic.com
+DOMAIN,googleapis-cn.com
+DOMAIN,googleapps-cn.com
+DOMAIN,gstatic-cn.com
+DOMAIN,i.pki.goog
+DOMAIN,o.pki.goog
+DOMAIN,ocsp.pki.goog
+DOMAIN,pki-goog.l.google.com
+DOMAIN,ssl.gstatic.com
+DOMAIN,tools.google.com
+DOMAIN,www.gstatic.com
+DOMAIN-SUFFIX,265.com
+DOMAIN-SUFFIX,g.cn
+DOMAIN-SUFFIX,gkecnapps.cn
+DOMAIN-SUFFIX,google.cn
+DOMAIN-SUFFIX,googlecnapps.cn
+DOMAIN-SUFFIX,gstatic.cn
+DOMAIN-SUFFIX,gstaticcnapps.cn
+DOMAIN-SUFFIX,gvt1-cn.com
+DOMAIN-SUFFIX,gvt2-cn.com

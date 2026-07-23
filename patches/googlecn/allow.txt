@@ -1,0 +1,4 @@
+# Manually reviewed v2fly @cn exceptions.
+# Use `full:host.example` for exact hosts and `domain:example.cn` only for
+# intentionally approved suffix roots. Hard safety exclusions cannot be
+# overridden here.

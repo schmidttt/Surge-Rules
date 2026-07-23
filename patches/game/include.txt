@@ -1,0 +1,1 @@
+# Explicit additions to Game.list. Use only after platform-specific review.

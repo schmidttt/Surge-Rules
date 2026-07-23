@@ -27,6 +27,6 @@ v2fly 的 `@ads`、`@cn` 等属性不会转换为 Surge 路由动作；域名仍
 
 ```ini
 RULE-SET,<广告规则>,REJECT,...
-RULE-SET,https://raw.githubusercontent.com/schmidttt/Surge-Rules/main/rules/YouTube/YouTube.list,📹 YouTube,update-interval=86400,extended-matching
-RULE-SET,https://raw.githubusercontent.com/schmidttt/Surge-Rules/main/rules/Google/Google.list,🔍 Google,update-interval=86400,extended-matching
+RULE-SET,https://raw.githubusercontent.com/schmidttt/surge-rules/main/rules/YouTube/YouTube.list,📹 YouTube,update-interval=86400,extended-matching
+RULE-SET,https://raw.githubusercontent.com/schmidttt/surge-rules/main/rules/Google/Google.list,🔍 Google,update-interval=86400,extended-matching
 ```

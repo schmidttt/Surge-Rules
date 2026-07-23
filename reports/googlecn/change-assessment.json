@@ -1,0 +1,22 @@
+{
+  "actual_change_ratio": 0.0,
+  "added": [],
+  "added_count": 0,
+  "auto_merge_eligible": true,
+  "baseline_rules": 35,
+  "classification": "low-risk",
+  "generated_rules": 35,
+  "new_unresolved_candidate_count": 0,
+  "new_unresolved_candidates": [],
+  "reasons": [],
+  "removed": [],
+  "removed_count": 0,
+  "schema_version": 1,
+  "thresholds": {
+    "automatic_deletions_allowed": false,
+    "max_auto_additions": 5,
+    "max_auto_change_ratio": 0.1,
+    "max_build_change_ratio": 0.5
+  },
+  "unresolved_candidate_count": 22
+}

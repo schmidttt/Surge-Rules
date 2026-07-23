@@ -1,0 +1,668 @@
+{
+  "counts": {
+    "allow_patch": 0,
+    "approved": 35,
+    "deny_patch": 0,
+    "excluded": 69,
+    "excluded_account_or_shared_application": 12,
+    "excluded_advertising_or_measurement": 48,
+    "excluded_conflicts_with_youtube": 2,
+    "excluded_crash_or_telemetry": 5,
+    "excluded_unsupported_regexp": 2,
+    "review": 22,
+    "stale_deny_patch": 0,
+    "v2fly_cn_candidates": 126
+  },
+  "decisions": {
+    "approved": [
+      {
+        "identity": "full:c.pki.goog",
+        "reason": "approved-exact-technical-host",
+        "rule": "DOMAIN,c.pki.goog"
+      },
+      {
+        "identity": "full:cache.pack.google.com",
+        "reason": "approved-exact-technical-host",
+        "rule": "DOMAIN,cache.pack.google.com"
+      },
+      {
+        "identity": "full:connectivitycheck.gstatic.com",
+        "reason": "approved-exact-technical-host",
+        "rule": "DOMAIN,connectivitycheck.gstatic.com"
+      },
+      {
+        "identity": "full:crl.pki.goog",
+        "reason": "approved-exact-technical-host",
+        "rule": "DOMAIN,crl.pki.goog"
+      },
+      {
+        "identity": "full:crls.pki.goog",
+        "reason": "approved-exact-technical-host",
+        "rule": "DOMAIN,crls.pki.goog"
+      },
+      {
+        "identity": "full:dl.google.com",
+        "reason": "approved-exact-technical-host",
+        "rule": "DOMAIN,dl.google.com"
+      },
+      {
+        "identity": "full:dl.l.google.com",
+        "reason": "approved-exact-technical-host",
+        "rule": "DOMAIN,dl.l.google.com"
+      },
+      {
+        "identity": "full:download.mlcc.google.com",
+        "reason": "approved-exact-technical-host",
+        "rule": "DOMAIN,download.mlcc.google.com"
+      },
+      {
+        "identity": "full:download.tensorflow.google.com",
+        "reason": "approved-exact-technical-host",
+        "rule": "DOMAIN,download.tensorflow.google.com"
+      },
+      {
+        "identity": "full:fontfiles.googleapis.com",
+        "reason": "approved-exact-technical-host",
+        "rule": "DOMAIN,fontfiles.googleapis.com"
+      },
+      {
+        "identity": "full:fonts.googleapis.com",
+        "reason": "approved-exact-technical-host",
+        "rule": "DOMAIN,fonts.googleapis.com"
+      },
+      {
+        "identity": "full:fonts.gstatic.com",
+        "reason": "approved-exact-technical-host",
+        "rule": "DOMAIN,fonts.gstatic.com"
+      },
+      {
+        "identity": "full:g0.gstatic.com",
+        "reason": "approved-exact-technical-host",
+        "rule": "DOMAIN,g0.gstatic.com"
+      },
+      {
+        "identity": "full:g1.gstatic.com",
+        "reason": "approved-exact-technical-host",
+        "rule": "DOMAIN,g1.gstatic.com"
+      },
+      {
+        "identity": "full:g2.gstatic.com",
+        "reason": "approved-exact-technical-host",
+        "rule": "DOMAIN,g2.gstatic.com"
+      },
+      {
+        "identity": "full:g3.gstatic.com",
+        "reason": "approved-exact-technical-host",
+        "rule": "DOMAIN,g3.gstatic.com"
+      },
+      {
+        "identity": "full:googleapis-cn.com",
+        "reason": "approved-exact-technical-host",
+        "rule": "DOMAIN,googleapis-cn.com"
+      },
+      {
+        "identity": "full:googleapps-cn.com",
+        "reason": "approved-exact-technical-host",
+        "rule": "DOMAIN,googleapps-cn.com"
+      },
+      {
+        "identity": "full:gstatic-cn.com",
+        "reason": "approved-exact-technical-host",
+        "rule": "DOMAIN,gstatic-cn.com"
+      },
+      {
+        "identity": "full:i.pki.goog",
+        "reason": "approved-exact-technical-host",
+        "rule": "DOMAIN,i.pki.goog"
+      },
+      {
+        "identity": "full:o.pki.goog",
+        "reason": "approved-exact-technical-host",
+        "rule": "DOMAIN,o.pki.goog"
+      },
+      {
+        "identity": "full:ocsp.pki.goog",
+        "reason": "approved-exact-technical-host",
+        "rule": "DOMAIN,ocsp.pki.goog"
+      },
+      {
+        "identity": "full:pki-goog.l.google.com",
+        "reason": "approved-exact-technical-host",
+        "rule": "DOMAIN,pki-goog.l.google.com"
+      },
+      {
+        "identity": "full:ssl.gstatic.com",
+        "reason": "approved-exact-technical-host",
+        "rule": "DOMAIN,ssl.gstatic.com"
+      },
+      {
+        "identity": "full:tools.google.com",
+        "reason": "approved-exact-technical-host",
+        "rule": "DOMAIN,tools.google.com"
+      },
+      {
+        "identity": "full:www.gstatic.com",
+        "reason": "approved-exact-technical-host",
+        "rule": "DOMAIN,www.gstatic.com"
+      },
+      {
+        "identity": "domain:265.com",
+        "reason": "china-specific-approved-suffix",
+        "rule": "DOMAIN-SUFFIX,265.com"
+      },
+      {
+        "identity": "domain:g.cn",
+        "reason": "china-specific-approved-suffix",
+        "rule": "DOMAIN-SUFFIX,g.cn"
+      },
+      {
+        "identity": "domain:gkecnapps.cn",
+        "reason": "china-specific-approved-suffix",
+        "rule": "DOMAIN-SUFFIX,gkecnapps.cn"
+      },
+      {
+        "identity": "domain:google.cn",
+        "reason": "china-specific-approved-suffix",
+        "rule": "DOMAIN-SUFFIX,google.cn"
+      },
+      {
+        "identity": "domain:googlecnapps.cn",
+        "reason": "china-specific-approved-suffix",
+        "rule": "DOMAIN-SUFFIX,googlecnapps.cn"
+      },
+      {
+        "identity": "domain:gstatic.cn",
+        "reason": "china-specific-approved-suffix",
+        "rule": "DOMAIN-SUFFIX,gstatic.cn"
+      },
+      {
+        "identity": "domain:gstaticcnapps.cn",
+        "reason": "china-specific-approved-suffix",
+        "rule": "DOMAIN-SUFFIX,gstaticcnapps.cn"
+      },
+      {
+        "identity": "domain:gvt1-cn.com",
+        "reason": "china-specific-approved-suffix",
+        "rule": "DOMAIN-SUFFIX,gvt1-cn.com"
+      },
+      {
+        "identity": "domain:gvt2-cn.com",
+        "reason": "china-specific-approved-suffix",
+        "rule": "DOMAIN-SUFFIX,gvt2-cn.com"
+      }
+    ],
+    "excluded": [
+      {
+        "identity": "full:2mdn-cn.net",
+        "reason": "advertising-or-measurement",
+        "rule": "DOMAIN,2mdn-cn.net"
+      },
+      {
+        "identity": "full:2mdn.net",
+        "reason": "advertising-or-measurement",
+        "rule": "DOMAIN,2mdn.net"
+      },
+      {
+        "identity": "full:admob-cn.com",
+        "reason": "advertising-or-measurement",
+        "rule": "DOMAIN,admob-cn.com"
+      },
+      {
+        "identity": "full:adservice.google.com",
+        "reason": "advertising-or-measurement",
+        "rule": "DOMAIN,adservice.google.com"
+      },
+      {
+        "identity": "full:app-analytics-services.com",
+        "reason": "advertising-or-measurement",
+        "rule": "DOMAIN,app-analytics-services.com"
+      },
+      {
+        "identity": "full:app-measurement-cn.com",
+        "reason": "advertising-or-measurement",
+        "rule": "DOMAIN,app-measurement-cn.com"
+      },
+      {
+        "identity": "full:app-measurement.com",
+        "reason": "advertising-or-measurement",
+        "rule": "DOMAIN,app-measurement.com"
+      },
+      {
+        "identity": "full:apps5.oingo.com",
+        "reason": "advertising-or-measurement",
+        "rule": "DOMAIN,apps5.oingo.com"
+      },
+      {
+        "identity": "full:avail.googleflights.net",
+        "reason": "account-or-shared-application",
+        "rule": "DOMAIN,avail.googleflights.net"
+      },
+      {
+        "identity": "full:beacons.gcp.gvt2.com",
+        "reason": "advertising-or-measurement",
+        "rule": "DOMAIN,beacons.gcp.gvt2.com"
+      },
+      {
+        "identity": "full:beacons.gvt2.com",
+        "reason": "advertising-or-measurement",
+        "rule": "DOMAIN,beacons.gvt2.com"
+      },
+      {
+        "identity": "full:beacons2.gvt2.com",
+        "reason": "advertising-or-measurement",
+        "rule": "DOMAIN,beacons2.gvt2.com"
+      },
+      {
+        "identity": "full:beacons3.gvt2.com",
+        "reason": "advertising-or-measurement",
+        "rule": "DOMAIN,beacons3.gvt2.com"
+      },
+      {
+        "identity": "full:c.admob.com",
+        "reason": "advertising-or-measurement",
+        "rule": "DOMAIN,c.admob.com"
+      },
+      {
+        "identity": "full:clickserve.cc-dt.com",
+        "reason": "advertising-or-measurement",
+        "rule": "DOMAIN,clickserve.cc-dt.com"
+      },
+      {
+        "identity": "full:clickserve.dartsearch.net",
+        "reason": "advertising-or-measurement",
+        "rule": "DOMAIN,clickserve.dartsearch.net"
+      },
+      {
+        "identity": "full:clickserver.googleads.com",
+        "reason": "advertising-or-measurement",
+        "rule": "DOMAIN,clickserver.googleads.com"
+      },
+      {
+        "identity": "full:crashlyticsreports-pa.googleapis.com",
+        "reason": "crash-or-telemetry",
+        "rule": "DOMAIN,crashlyticsreports-pa.googleapis.com"
+      },
+      {
+        "identity": "full:csi.gstatic.com",
+        "reason": "crash-or-telemetry",
+        "rule": "DOMAIN,csi.gstatic.com"
+      },
+      {
+        "identity": "full:dartsearch-cn.net",
+        "reason": "advertising-or-measurement",
+        "rule": "DOMAIN,dartsearch-cn.net"
+      },
+      {
+        "identity": "full:doubleclick-cn.net",
+        "reason": "advertising-or-measurement",
+        "rule": "DOMAIN,doubleclick-cn.net"
+      },
+      {
+        "identity": "full:doubleclick.net",
+        "reason": "advertising-or-measurement",
+        "rule": "DOMAIN,doubleclick.net"
+      },
+      {
+        "identity": "full:firebase-settings.crashlytics.com",
+        "reason": "crash-or-telemetry",
+        "rule": "DOMAIN,firebase-settings.crashlytics.com"
+      },
+      {
+        "identity": "full:gonglchuangl.net",
+        "reason": "advertising-or-measurement",
+        "rule": "DOMAIN,gonglchuangl.net"
+      },
+      {
+        "identity": "full:gongyichuangyi.net",
+        "reason": "advertising-or-measurement",
+        "rule": "DOMAIN,gongyichuangyi.net"
+      },
+      {
+        "identity": "full:google-analytics-cn.com",
+        "reason": "advertising-or-measurement",
+        "rule": "DOMAIN,google-analytics-cn.com"
+      },
+      {
+        "identity": "full:google-analytics.com",
+        "reason": "advertising-or-measurement",
+        "rule": "DOMAIN,google-analytics.com"
+      },
+      {
+        "identity": "full:googleadservices-cn.com",
+        "reason": "advertising-or-measurement",
+        "rule": "DOMAIN,googleadservices-cn.com"
+      },
+      {
+        "identity": "full:googleadservices.com",
+        "reason": "advertising-or-measurement",
+        "rule": "DOMAIN,googleadservices.com"
+      },
+      {
+        "identity": "full:googleanalytics.com",
+        "reason": "advertising-or-measurement",
+        "rule": "DOMAIN,googleanalytics.com"
+      },
+      {
+        "identity": "full:googleflights-cn.net",
+        "reason": "account-or-shared-application",
+        "rule": "DOMAIN,googleflights-cn.net"
+      },
+      {
+        "identity": "full:googleoptimize-cn.com",
+        "reason": "advertising-or-measurement",
+        "rule": "DOMAIN,googleoptimize-cn.com"
+      },
+      {
+        "identity": "full:googleoptimize.com",
+        "reason": "advertising-or-measurement",
+        "rule": "DOMAIN,googleoptimize.com"
+      },
+      {
+        "identity": "full:googlesyndication-cn.com",
+        "reason": "advertising-or-measurement",
+        "rule": "DOMAIN,googlesyndication-cn.com"
+      },
+      {
+        "identity": "full:googlesyndication.com",
+        "reason": "advertising-or-measurement",
+        "rule": "DOMAIN,googlesyndication.com"
+      },
+      {
+        "identity": "full:googletagmanager-cn.com",
+        "reason": "advertising-or-measurement",
+        "rule": "DOMAIN,googletagmanager-cn.com"
+      },
+      {
+        "identity": "full:googletagmanager.com",
+        "reason": "advertising-or-measurement",
+        "rule": "DOMAIN,googletagmanager.com"
+      },
+      {
+        "identity": "full:googletagservices-cn.com",
+        "reason": "advertising-or-measurement",
+        "rule": "DOMAIN,googletagservices-cn.com"
+      },
+      {
+        "identity": "full:googletagservices.com",
+        "reason": "advertising-or-measurement",
+        "rule": "DOMAIN,googletagservices.com"
+      },
+      {
+        "identity": "full:googletraveladservices-cn.com",
+        "reason": "advertising-or-measurement",
+        "rule": "DOMAIN,googletraveladservices-cn.com"
+      },
+      {
+        "identity": "full:googletraveladservices.com",
+        "reason": "advertising-or-measurement",
+        "rule": "DOMAIN,googletraveladservices.com"
+      },
+      {
+        "identity": "full:googlevads-cn.com",
+        "reason": "advertising-or-measurement",
+        "rule": "DOMAIN,googlevads-cn.com"
+      },
+      {
+        "identity": "full:gstaticadssl.l.google.com",
+        "reason": "advertising-or-measurement",
+        "rule": "DOMAIN,gstaticadssl.l.google.com"
+      },
+      {
+        "identity": "full:gtm.oasisfeng.com",
+        "reason": "advertising-or-measurement",
+        "rule": "DOMAIN,gtm.oasisfeng.com"
+      },
+      {
+        "identity": "full:imasdk.googleapis.com",
+        "reason": "advertising-or-measurement",
+        "rule": "DOMAIN,imasdk.googleapis.com"
+      },
+      {
+        "identity": "full:pagead-googlehosted.l.google.com",
+        "reason": "advertising-or-measurement",
+        "rule": "DOMAIN,pagead-googlehosted.l.google.com"
+      },
+      {
+        "identity": "full:performanceparameters.googleapis.com",
+        "reason": "crash-or-telemetry",
+        "rule": "DOMAIN,performanceparameters.googleapis.com"
+      },
+      {
+        "identity": "full:prod-controlbe.floonet.goog",
+        "reason": "account-or-shared-application",
+        "rule": "DOMAIN,prod-controlbe.floonet.goog"
+      },
+      {
+        "identity": "full:prod-databe.floonet.goog",
+        "reason": "account-or-shared-application",
+        "rule": "DOMAIN,prod-databe.floonet.goog"
+      },
+      {
+        "identity": "full:prod.databe.floonet.goog",
+        "reason": "account-or-shared-application",
+        "rule": "DOMAIN,prod.databe.floonet.goog"
+      },
+      {
+        "identity": "full:qiao-cn.com",
+        "reason": "advertising-or-measurement",
+        "rule": "DOMAIN,qiao-cn.com"
+      },
+      {
+        "identity": "full:qpx.googleflights.net",
+        "reason": "account-or-shared-application",
+        "rule": "DOMAIN,qpx.googleflights.net"
+      },
+      {
+        "identity": "full:redirector.c.chat.google.com",
+        "reason": "account-or-shared-application",
+        "rule": "DOMAIN,redirector.c.chat.google.com"
+      },
+      {
+        "identity": "full:redirector.c.mail.google.com",
+        "reason": "account-or-shared-application",
+        "rule": "DOMAIN,redirector.c.mail.google.com"
+      },
+      {
+        "identity": "full:redirector.c.play.google.com",
+        "reason": "account-or-shared-application",
+        "rule": "DOMAIN,redirector.c.play.google.com"
+      },
+      {
+        "identity": "full:redirector.c.youtubeeducation.com",
+        "reason": "conflicts-with-youtube",
+        "rule": "DOMAIN,redirector.c.youtubeeducation.com"
+      },
+      {
+        "identity": "full:service.urchin.com",
+        "reason": "advertising-or-measurement",
+        "rule": "DOMAIN,service.urchin.com"
+      },
+      {
+        "identity": "full:ssl-google-analytics.l.google.com",
+        "reason": "advertising-or-measurement",
+        "rule": "DOMAIN,ssl-google-analytics.l.google.com"
+      },
+      {
+        "identity": "full:staging-controlbe.floonet.goog",
+        "reason": "account-or-shared-application",
+        "rule": "DOMAIN,staging-controlbe.floonet.goog"
+      },
+      {
+        "identity": "full:staging-databe.floonet.goog",
+        "reason": "account-or-shared-application",
+        "rule": "DOMAIN,staging-databe.floonet.goog"
+      },
+      {
+        "identity": "full:staging.databe.floonet.goog",
+        "reason": "account-or-shared-application",
+        "rule": "DOMAIN,staging.databe.floonet.goog"
+      },
+      {
+        "identity": "full:update.crashlytics.com",
+        "reason": "crash-or-telemetry",
+        "rule": "DOMAIN,update.crashlytics.com"
+      },
+      {
+        "identity": "full:www-google-analytics.l.google.com",
+        "reason": "advertising-or-measurement",
+        "rule": "DOMAIN,www-google-analytics.l.google.com"
+      },
+      {
+        "identity": "full:www-googletagmanager.l.google.com",
+        "reason": "advertising-or-measurement",
+        "rule": "DOMAIN,www-googletagmanager.l.google.com"
+      },
+      {
+        "identity": "full:www.destinationurl.com",
+        "reason": "advertising-or-measurement",
+        "rule": "DOMAIN,www.destinationurl.com"
+      },
+      {
+        "identity": "full:www.pxcc.com",
+        "reason": "advertising-or-measurement",
+        "rule": "DOMAIN,www.pxcc.com"
+      },
+      {
+        "identity": "domain:ggpht.cn",
+        "reason": "conflicts-with-youtube",
+        "rule": "DOMAIN-SUFFIX,ggpht.cn"
+      },
+      {
+        "identity": "regexp:^r+[0-9]+(---|\\.)sn-(2x3|ni5|j5o)\\w{5}\\.googlevideo\\.com$",
+        "reason": "unsupported-regexp",
+        "rule": "regexp:^r+[0-9]+(---|\\.)sn-(2x3|ni5|j5o)\\w{5}\\.googlevideo\\.com$"
+      },
+      {
+        "identity": "regexp:^r+[0-9]+(---|\\.)sn-(2x3|ni5|j5o)\\w{5}\\.xn--ngstr-lra8j\\.com$",
+        "reason": "unsupported-regexp",
+        "rule": "regexp:^r+[0-9]+(---|\\.)sn-(2x3|ni5|j5o)\\w{5}\\.xn--ngstr-lra8j\\.com$"
+      }
+    ],
+    "review": [
+      {
+        "identity": "full:c.android.clients.google.com",
+        "reason": "new-or-ambiguous-cn-host",
+        "rule": "DOMAIN,c.android.clients.google.com"
+      },
+      {
+        "identity": "full:cache-management-prod.google.com",
+        "reason": "new-or-ambiguous-cn-host",
+        "rule": "DOMAIN,cache-management-prod.google.com"
+      },
+      {
+        "identity": "full:checkin.gstatic.com",
+        "reason": "new-or-ambiguous-cn-host",
+        "rule": "DOMAIN,checkin.gstatic.com"
+      },
+      {
+        "identity": "full:clientservices.googleapis.com",
+        "reason": "new-or-ambiguous-cn-host",
+        "rule": "DOMAIN,clientservices.googleapis.com"
+      },
+      {
+        "identity": "full:cn.widevine.com",
+        "reason": "new-or-ambiguous-cn-host",
+        "rule": "DOMAIN,cn.widevine.com"
+      },
+      {
+        "identity": "full:dg-meta.video.google.com",
+        "reason": "new-or-ambiguous-cn-host",
+        "rule": "DOMAIN,dg-meta.video.google.com"
+      },
+      {
+        "identity": "full:recaptcha-cn.net",
+        "reason": "new-or-ambiguous-cn-host",
+        "rule": "DOMAIN,recaptcha-cn.net"
+      },
+      {
+        "identity": "full:recaptcha.net",
+        "reason": "new-or-ambiguous-cn-host",
+        "rule": "DOMAIN,recaptcha.net"
+      },
+      {
+        "identity": "full:redirector.bdn.dev",
+        "reason": "new-or-ambiguous-cn-host",
+        "rule": "DOMAIN,redirector.bdn.dev"
+      },
+      {
+        "identity": "full:redirector.c.pack.google.com",
+        "reason": "new-or-ambiguous-cn-host",
+        "rule": "DOMAIN,redirector.c.pack.google.com"
+      },
+      {
+        "identity": "full:redirector.gcpcdn.gvt1.com",
+        "reason": "new-or-ambiguous-cn-host",
+        "rule": "DOMAIN,redirector.gcpcdn.gvt1.com"
+      },
+      {
+        "identity": "full:redirector.gvt1.com",
+        "reason": "new-or-ambiguous-cn-host",
+        "rule": "DOMAIN,redirector.gvt1.com"
+      },
+      {
+        "identity": "full:redirector.offline-maps.gvt1.com",
+        "reason": "new-or-ambiguous-cn-host",
+        "rule": "DOMAIN,redirector.offline-maps.gvt1.com"
+      },
+      {
+        "identity": "full:redirector.snap.gvt1.com",
+        "reason": "new-or-ambiguous-cn-host",
+        "rule": "DOMAIN,redirector.snap.gvt1.com"
+      },
+      {
+        "identity": "full:redirector.xn--ngstr-lra8j.com",
+        "reason": "new-or-ambiguous-cn-host",
+        "rule": "DOMAIN,redirector.xn--ngstr-lra8j.com"
+      },
+      {
+        "identity": "full:safebrowsing-cache.google.com",
+        "reason": "new-or-ambiguous-cn-host",
+        "rule": "DOMAIN,safebrowsing-cache.google.com"
+      },
+      {
+        "identity": "full:safebrowsing.googleapis.com",
+        "reason": "new-or-ambiguous-cn-host",
+        "rule": "DOMAIN,safebrowsing.googleapis.com"
+      },
+      {
+        "identity": "full:tac.googleapis.com",
+        "reason": "new-or-ambiguous-cn-host",
+        "rule": "DOMAIN,tac.googleapis.com"
+      },
+      {
+        "identity": "full:update.googleapis.com",
+        "reason": "new-or-ambiguous-cn-host",
+        "rule": "DOMAIN,update.googleapis.com"
+      },
+      {
+        "identity": "full:wear.googleapis.com",
+        "reason": "new-or-ambiguous-cn-host",
+        "rule": "DOMAIN,wear.googleapis.com"
+      },
+      {
+        "identity": "full:www.recaptcha-cn.net",
+        "reason": "new-or-ambiguous-cn-host",
+        "rule": "DOMAIN,www.recaptcha-cn.net"
+      },
+      {
+        "identity": "full:www.recaptcha.net",
+        "reason": "new-or-ambiguous-cn-host",
+        "rule": "DOMAIN,www.recaptcha.net"
+      }
+    ]
+  },
+  "policy": {
+    "ads_ai_youtube_and_messaging_excluded": true,
+    "ambiguous_candidates_published": false,
+    "network_probe_is_authoritative": false,
+    "output_uses_conservative_exact_hosts": true,
+    "v2fly_cn_is_only_candidate_source": true
+  },
+  "schema_version": 1,
+  "source": {
+    "commit": "b086c38db74b626c0a24fdd8ed41e33515577bf9",
+    "committed_at": "2026-07-21T14:59:07Z",
+    "repository": "v2fly/domain-list-community",
+    "requested_ref": "master"
+  }
+}

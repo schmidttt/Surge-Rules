@@ -29,6 +29,6 @@
 
 ```ini
 RULE-SET,<广告规则>,REJECT,...
-RULE-SET,https://raw.githubusercontent.com/schmidttt/Surge-Rules/main/rules/TikTok/TikTok.list,📱 TikTok,update-interval=86400,extended-matching
+RULE-SET,https://raw.githubusercontent.com/schmidttt/surge-rules/main/rules/TikTok/TikTok.list,📱 TikTok,update-interval=86400,extended-matching
 RULE-SET,https://ruleset.skk.moe/List/non_ip/stream.conf,🎞️ 全球媒体,update-interval=86400,extended-matching
 ```

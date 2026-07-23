@@ -1,0 +1,1 @@
+# Exact v2fly entries intentionally excluded from Game.list.

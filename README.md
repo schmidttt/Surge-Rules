@@ -1,210 +1,196 @@
-# Surge-Rules
+# surge-rules
 
-为 Surge 构建可审核、可回退、可独立维护的个人规则库。仓库采用多规则项目结构；每类规则分别维护生成脚本、补丁、报告、测试和同步工作流，避免不同规则之间相互耦合。
+为 Surge 构建可审核、可回退、按策略目标拆分的个人规则库。正式产物以
+`v2fly/domain-list-community` 为唯一自动生成上游；Sukka 与
+BlackMatrix7 只用于覆盖审计，不会把第三方成品表直接混入本仓库。
 
-当前实现 Google、YouTube、TikTok 和 BiliBili 四类规则。每份规则都以 v2fly 为唯一正式上游，BlackMatrix7 与 Sukka 仅作聚合审计；本仓库不会自动修改或覆盖 Surge 配置。
+当前公开七张规则表：
 
-## YouTube.list、TikTok.list 与 BiliBili.list
+| 规则 | 策略目标 | 正式产物 |
+|---|---|---|
+| Google | 通用 Google 代理兜底 | [`rules/Google/Google.list`](rules/Google/Google.list) |
+| GoogleCN | 保守的中国大陆直连入口 | [`rules/GoogleCN/GoogleCN.list`](rules/GoogleCN/GoogleCN.list) |
+| YouTube | YouTube 专用策略 | [`rules/YouTube/YouTube.list`](rules/YouTube/YouTube.list) |
+| TikTok | TikTok 专用策略 | [`rules/TikTok/TikTok.list`](rules/TikTok/TikTok.list) |
+| BiliBili | BiliBili 专用策略 | [`rules/BiliBili/BiliBili.list`](rules/BiliBili/BiliBili.list) |
+| Game | Epic、PlayStation、Steam、Nintendo 的海外/通用入口 | [`rules/Game/Game.list`](rules/Game/Game.list) |
+| GameCN | 上述游戏平台的中国大陆入口 | [`rules/GameCN/GameCN.list`](rules/GameCN/GameCN.list) |
 
-- [`rules/YouTube/YouTube.list`](rules/YouTube/YouTube.list) 覆盖 YouTube 页面、接口、视频、图片和产品相关域名，供 `📹 YouTube` 策略组使用。
-- [`rules/TikTok/TikTok.list`](rules/TikTok/TikTok.list) 覆盖 TikTok 应用、网页、接口、直播和产品 CDN，供 `📱 TikTok` 策略组使用；不因同属字节跳动而收录 CapCut、Trae 或 MarsCode。
-- [`rules/BiliBili/BiliBili.list`](rules/BiliBili/BiliBili.list) 覆盖哔哩哔哩大陆主站、接口、CDN、漫画、游戏与国际版域名，供 `📺 BiliBili` 策略组使用；日常选择 `DIRECT`，需要时整体切换香港或台湾入口。
-- 三份列表都保留 v2fly 可转换的 `@ads`、`@cn`、`@!cn` 域名；属性本身不写入 Surge，广告拦截和直连仍由前置规则决定。
-- Sukka 侧重地区敏感流量，BlackMatrix7 是聚合成品表；两者的独有条目只产生数量审计，不会自动进入本项目规则。
+## Surge 推荐顺序
 
-推荐的核心顺序：
-
-```ini
-# 广告与跟踪规则放在最前面
-RULE-SET,<你的 Google AI / AI 规则地址>,🤖 Intelligence,...
-RULE-SET,https://raw.githubusercontent.com/schmidttt/Surge-Rules/main/rules/YouTube/YouTube.list,📹 YouTube,update-interval=86400,extended-matching
-RULE-SET,https://raw.githubusercontent.com/schmidttt/Surge-Rules/main/rules/Google/Google.list,🔍 Google,update-interval=86400,extended-matching
-RULE-SET,https://raw.githubusercontent.com/schmidttt/Surge-Rules/main/rules/TikTok/TikTok.list,📱 TikTok,update-interval=86400,extended-matching
-RULE-SET,https://raw.githubusercontent.com/schmidttt/Surge-Rules/main/rules/BiliBili/BiliBili.list,📺 BiliBili,update-interval=86400,extended-matching
-RULE-SET,https://ruleset.skk.moe/List/non_ip/stream.conf,🎞️ 全球媒体,update-interval=86400,extended-matching
-```
-
-## Google.list 的范围与用法
-
-[`rules/Google/Google.list`](rules/Google/Google.list) 是面向 Surge 的 Google 通用兜底规则。它以 v2fly `google` 根集合为唯一正式源，先排除上游中可明确识别的 Google AI / Gemini 与 YouTube 精确产品条目，再输出其余 `DOMAIN` 和 `DOMAIN-SUFFIX` 规则。
-
-需要注意：这不是 Google 官方域名清单，也不是与 Gemini、YouTube 完全互斥的数学集合。`DOMAIN-SUFFIX,google.com`、`DOMAIN-SUFFIX,googleapis.com` 等父级规则仍可能覆盖产品子域，因此必须依靠 Surge 从上到下、首次命中即停止的规则顺序完成最终分流。
-
-推荐顺序：
+规则遵循 Surge 从上到下首次命中。广告和 AI 规则应更靠前；YouTube
+必须先于宽泛 Google；GameCN 必须先于 Game。
 
 ```ini
-# 广告与跟踪规则应放在更前面
-RULE-SET,<你的 Google AI / AI 规则地址>,🤖 Intelligence,...
-RULE-SET,<你的 YouTube 规则地址>,📹 YouTube,...
-RULE-SET,<你当前使用的 GoogleCN 规则地址>,DIRECT,...
-RULE-SET,https://raw.githubusercontent.com/schmidttt/Surge-Rules/main/rules/Google/Google.list,🔍 Google,update-interval=86400,extended-matching
+# 广告与跟踪规则
+RULE-SET,https://ruleset.skk.moe/List/non_ip/ai.conf,🤖 Intelligence,...
+RULE-SET,https://ruleset.skk.moe/List/non_ip/apple_intelligence.conf,🍎 Apple,...
+RULE-SET,https://ruleset.skk.moe/List/non_ip/apple_services.conf,🍎 Apple,...
+
+RULE-SET,https://raw.githubusercontent.com/schmidttt/surge-rules/main/rules/YouTube/YouTube.list,📹 YouTube,...
+RULE-SET,https://raw.githubusercontent.com/schmidttt/surge-rules/main/rules/GoogleCN/GoogleCN.list,DIRECT,...
+RULE-SET,https://raw.githubusercontent.com/schmidttt/surge-rules/main/rules/Google/Google.list,🔍 Google,...
+
+RULE-SET,https://raw.githubusercontent.com/schmidttt/surge-rules/main/rules/GameCN/GameCN.list,DIRECT,...
+RULE-SET,https://raw.githubusercontent.com/schmidttt/surge-rules/main/rules/Game/Game.list,🎲 Gamer,...
+
+RULE-SET,https://raw.githubusercontent.com/schmidttt/surge-rules/main/rules/TikTok/TikTok.list,📱 TikTok,...
+RULE-SET,https://raw.githubusercontent.com/schmidttt/surge-rules/main/rules/BiliBili/BiliBili.list,📺 BiliBili,...
+RULE-SET,https://ruleset.skk.moe/List/non_ip/stream.conf,🎬 Streaming,...
 ```
 
-- `🤖 Intelligence` 先接管 Gemini、AI Studio、Google AI API 等已识别的 Google AI 流量。
-- `📹 YouTube` 先接管 YouTube 页面、接口和视频相关流量。
-- `GoogleCN` 如继续使用，应在本列表之前处理可直连的 Google 静态资源。
-- 本列表最后接管其余 Google 域名；它本身不决定 `DIRECT`、`REJECT` 或具体代理节点。
-- 切换时应替换原有广义 `Google.list` 规则，不要与旧 Google 大表并列重复引用。
-- v2fly 的 `@cn`、`@ads` 来源属性不会写入 Surge 规则行；相关直连和拦截仍由前置 GoogleCN、广告规则负责。
+Google 与 `🤖 Intelligence` 在使用 Gemini 时应选择同一个实际出口 IP。
+当前配置不使用 Google HTTPS MITM，因此不能依赖 `URL-REGEX` 修复
+Gemini 的验证跳转；同出口是更稳定的运行约束。
 
-## 规则项目
+## Google 与 GoogleCN
 
-| 规则 | 状态 | 正式上游 | 正式产物 |
-|---|---|---|---|
-| Google | 自动同步、风险分级 | `v2fly/domain-list-community` | `rules/Google/Google.list` |
-| YouTube | 自动同步、独立风险分级 | `v2fly/domain-list-community:data/youtube` | `rules/YouTube/YouTube.list` |
-| TikTok | 自动同步、独立风险分级 | `v2fly/domain-list-community:data/tiktok` | `rules/TikTok/TikTok.list` |
-| BiliBili | 自动同步、独立风险分级 | `v2fly/domain-list-community:data/bilibili` | `rules/BiliBili/BiliBili.list` |
+`Google.list` 是 Google 通用兜底。生成器先排除 v2fly 中可明确识别的
+Google AI 和 YouTube 精确产品条目，再输出剩余 `DOMAIN` 与
+`DOMAIN-SUFFIX`。父级 Google 域名仍可能覆盖产品子域，因此规则顺序
+始终是最终安全边界。
 
-未来新增其他规则时，应建立独立的 `rules/<Name>/`、`scripts/<name>/`、`patches/<name>/`、`reports/<name>/`、`tests/<name>/` 和对应工作流；不能让某一规则的补丁或发布流程隐式影响其他规则。
+`GoogleCN.list` 与 Google 共用 v2fly 解析思路，但独立生成、独立报告、
+独立风险门禁，并没有合并成同一张表。GoogleCN 自动审查器只把以下条目
+发布为直连规则：
 
-## 当前 Google 目标
+- 明确带 v2fly `@cn`；
+- 不属于 `@ads`、`@!cn`、Google AI、YouTube 或 Google FCM；
+- 中国专属根域名，或经过显式批准的精确技术主机；
+- 不属于广告统计、Crashlytics、账号或共享应用等高风险类别。
 
-- 以 [`v2fly/domain-list-community`](https://github.com/v2fly/domain-list-community) 为唯一用于自动生成的正式上游；它是社区数据源，不是 Google 官方域名清单。
-- 以完整 Google 根集合为起点，内部识别 Google AI 与 YouTube，正式只输出剩余 `Google.list`。
-- BlackMatrix7 只用于差异统计，Sukka 只用于分类审计；两者都不会自动合并，公开报告也不保存其具体规则条目。
-- 用 Google 官方产品文档整理的小型核心断言检查明显缺失；该断言不冒充 Google 全生态清单。
-- 使用 `include.txt` 和 `exclude.txt` 处理个人例外，不手工维护整张大表。
-- 保留 v2fly 的 `@cn`、`@ads` 可转换域名；DIRECT/REJECT 由以后调整 Surge 规则顺序时决定。
-- 输出标准 Surge `RULE-SET`，表头随采用的 v2fly 提交时间和规则总数更新。
-- 每次同步分别统计新增、删除和真实变动率；低风险更新可自动合并，任何删除和可疑变化保留 PR。
+新的模糊域名只进入
+[`reports/googlecn/review.md`](reports/googlecn/review.md)，不会进入正式
+列表。程序会标出来源、冲突和建议；只有“本次新增待确认”需要人工处理，
+历史上未变化的隔离条目不会反复阻断低风险更新。人工例外使用
+`patches/googlecn/allow.txt` 和 `patches/googlecn/deny.txt`，硬安全排除
+不能被补丁绕过。
+
+海外 CI 的 DNS/HTTP 结果不能证明中国大陆可直连，因此网络探测只用于
+确认文件可获取，不参与 GoogleCN 语义批准。
+
+## Game 与 GameCN
+
+仓库内部按 Epic、PlayStation、Steam、Nintendo 四个平台展开和统计，
+最终按策略目标只输出两张表：
+
+- `Game.list`：交给 `🎲 Gamer`，海外游戏下载继续跟随该策略。
+- `GameCN.list`：固定 `DIRECT`；中国平台根域名保留后缀匹配，CDN 和
+  下载主机收紧为精确 `DOMAIN`。
+
+不生成 `GameDownload.list`。v2fly 中无法安全转换的正则只进入
+[`reports/game/review.md`](reports/game/review.md)，不会为了覆盖率而放大
+成整个 CDN 后缀。由于少量 GameCN 精确主机被 Game 的父域覆盖，
+Surge 中必须先引用 GameCN。
+
+## 媒体规则
+
+- YouTube、TikTok、BiliBili 分别独立生成和审计。
+- BiliBili 同时包含大陆及国际版域名，日常可选择 `DIRECT`，需要时整体
+  切换香港或台湾入口。
+- Sukka stream 继续处理其他国际流媒体。
+- 本仓库不生成 DomesticMedia，不建议再引用 BlackMatrix7 ChinaMedia。
+  国内站点由专用规则、Sukka domestic、China IP 与 GEOIP CN 接管；
+  `iq.com` 等国际版服务因此可以继续进入 Streaming。
+
+## 安全门禁
+
+所有构建器都使用上游提交 SHA 和提交时间生成报告。所谓“固定”是指一次
+运行内先解析上游分支到 SHA，再用该 SHA 下载；仓库没有宣称跨时间永远
+锁定同一上游版本。
+
+更新保护包括：
+
+- 任何正式规则删除都必须人工审核；
+- 新增数量、真实变动率和大幅变更分别设独立阈值；
+- 核心域名、最小规则数、语法、重复项和文件末尾换行均会校验；
+- 不支持的上游语法发生变化时必须审核；
+- Sukka 覆盖差距增加会阻止 Google 低风险自动合并；
+- GoogleCN 新的模糊候选不会发布，并会阻止自动合并；
+- Game 与 GameCN 精确重复、旧仓库大小写和无效 raw 路径会失败；
+- 所有生成文件先写入暂存目录，通过校验后再逐文件替换。
+
+仓库变量：
+
+- `ENABLE_SCHEDULED_SYNC=true`：启用定时同步。
+- `SYNC_PHASE=stable`：从观察期切换到稳定期。
+- `AUTO_MERGE_LOW_RISK=true`：允许通过全部门禁的更新自动合并。
+
+在 Google 覆盖门禁和新增项目完成试运行前，应保持
+`AUTO_MERGE_LOW_RISK=false`。
 
 ## 目录
 
 ```text
-Surge-Rules/
+surge-rules/
 ├── .github/workflows/
-│   ├── sync-google-rules.yml
-│   ├── sync-youtube-rules.yml
-│   ├── sync-tiktok-rules.yml
-│   └── sync-bilibili-rules.yml
 ├── docs/rules/
 │   ├── google/
-│   ├── youtube/
-│   ├── tiktok/
-│   ├── bilibili/
+│   ├── googlecn/
+│   ├── game/
 │   └── media/
 ├── patches/
 │   ├── google/
+│   ├── googlecn/
+│   ├── game/
+│   ├── gamecn/
 │   ├── youtube/
 │   ├── tiktok/
 │   └── bilibili/
-├── references/google/
-│   └── official-core.txt
 ├── reports/
-│   ├── google/
-│   ├── youtube/
-│   ├── tiktok/
-│   └── bilibili/
 ├── rules/
 │   ├── Google/Google.list
+│   ├── GoogleCN/GoogleCN.list
 │   ├── YouTube/YouTube.list
 │   ├── TikTok/TikTok.list
-│   └── BiliBili/BiliBili.list
+│   ├── BiliBili/BiliBili.list
+│   ├── Game/Game.list
+│   └── GameCN/GameCN.list
 ├── scripts/
+│   ├── shared/v2fly.py
 │   ├── google/build_google_rules.py
-│   └── media/build_media_rules.py
-├── tests/
-│   ├── google/
-│   └── media/
-├── THIRD_PARTY_LICENSES/
-│   └── v2fly-MIT.txt
-├── LICENSE
-├── README.md
-└── THIRD_PARTY.md
+│   ├── googlecn/build_googlecn_rules.py
+│   ├── game/build_game_rules.py
+│   ├── media/build_media_rules.py
+│   └── validate_repository.py
+└── tests/
 ```
-
-## Google 数据流
-
-```text
-v2fly Google 根集合（唯一正式源）
-  ├── Google AI / Gemini 精确产品条目：由前置 AI 规则负责
-  ├── YouTube 精确产品条目：由前置 YouTube 规则负责
-  └── 剩余 Google 生态：rules/Google/Google.list
-
-BlackMatrix7 + Sukka + Google 官方产品断言
-  └── 只生成聚合统计与覆盖审计，不保存具体第三方规则条目
-```
-
-`DOMAIN-SUFFIX,google.com` 等父级规则仍可能覆盖 Gemini 或 YouTube 子域。因此产品分流最终必须依赖 Surge 的首次命中顺序，不能仅靠物理删除显式条目实现完全互斥。详细设计见 [`docs/rules/google/DESIGN.md`](docs/rules/google/DESIGN.md)。
 
 ## 本地验证
 
-运行离线测试：
-
 ```bash
 python3 -m unittest discover -s tests/google -v
+python3 -m unittest discover -s tests/googlecn -v
+python3 -m unittest discover -s tests/game -v
 python3 -m unittest discover -s tests/media -v
+python3 scripts/validate_repository.py
 ```
 
-从当前上游构建：
+从当前上游解析并固定本次构建使用的提交：
 
 ```bash
 python3 scripts/google/build_google_rules.py --fetch
+python3 scripts/googlecn/build_googlecn_rules.py --fetch
+python3 scripts/game/build_game_rules.py --fetch
 python3 scripts/media/build_media_rules.py --product youtube --fetch
 python3 scripts/media/build_media_rules.py --product tiktok --fetch
 python3 scripts/media/build_media_rules.py --product bilibili --fetch
 ```
 
-构建器会先把产物写入临时目录，全部校验通过后才替换对应 `rules/` 和 `reports/` 文件。下载、解析、核心域名或数量变化保护失败时，现有产物不会被覆盖。
-
-## 同步节奏
-
-- 观察期两周：每天北京时间 04:00 整触发。
-- 稳定期：每周二、周四、周六北京时间 04:00 整触发。
-- 定时任务默认不执行构建；明确设置仓库变量 `ENABLE_SCHEDULED_SYNC=true` 后才启用。
-- 默认阶段为观察期；两周后设置 `SYNC_PHASE=stable` 即切换到稳定期。
-- 无变化不提交；有变化先创建 PR 留痕。
-- 设置 `AUTO_MERGE_LOW_RISK=true` 后，只有无删除、未触发各规则独立风险门槛的更新才会自动合并。
-- Google：新增不超过 20 条、真实变动不超过 2%；超过 10% 停止构建。
-- YouTube：新增不超过 5 条、真实变动不超过 3%；超过 15% 停止构建。
-- TikTok：新增不超过 2 条、真实变动不超过 8%；超过 20% 停止构建。
-- BiliBili：新增不超过 3 条、真实变动不超过 6%；超过 20% 停止构建。
-- 任意删除、不支持语法变化或 Sukka 核心覆盖差距增加都会保留 PR；核心域名消失时直接停止构建。
-
-## 发布边界
-
-- 当前不修改 Surge v36 或其他 Surge 配置。
-- 定时同步与低风险自动合并都由独立仓库变量显式控制，随时可以关闭。
-- 当前不生成 GoogleCN、广告或其他路由策略文件，也不修改 Surge v36。
-- 项目脚本采用 MIT；v2fly 的 MIT 许可证全文和署名独立保留。
-- Sukka 与 BlackMatrix7 只在线读取并生成聚合统计，不在公开报告和测试夹具中转载其具体规则。
-
-正式远程地址：
+## 正式 raw 地址
 
 ```text
-https://raw.githubusercontent.com/schmidttt/Surge-Rules/main/rules/Google/Google.list
-https://raw.githubusercontent.com/schmidttt/Surge-Rules/main/rules/YouTube/YouTube.list
-https://raw.githubusercontent.com/schmidttt/Surge-Rules/main/rules/TikTok/TikTok.list
-https://raw.githubusercontent.com/schmidttt/Surge-Rules/main/rules/BiliBili/BiliBili.list
+https://raw.githubusercontent.com/schmidttt/surge-rules/main/rules/Google/Google.list
+https://raw.githubusercontent.com/schmidttt/surge-rules/main/rules/GoogleCN/GoogleCN.list
+https://raw.githubusercontent.com/schmidttt/surge-rules/main/rules/YouTube/YouTube.list
+https://raw.githubusercontent.com/schmidttt/surge-rules/main/rules/TikTok/TikTok.list
+https://raw.githubusercontent.com/schmidttt/surge-rules/main/rules/BiliBili/BiliBili.list
+https://raw.githubusercontent.com/schmidttt/surge-rules/main/rules/Game/Game.list
+https://raw.githubusercontent.com/schmidttt/surge-rules/main/rules/GameCN/GameCN.list
 ```
 
-## 本地审核基线（2026-07-21，Asia/Shanghai）
+## 许可
 
-- v2fly 固定提交：`462dc5706f1d578a2135e8f5dfbdade511094fa7`
-- `Google.list`：890 条
-- v2fly `google` 展开：1110 条
-- Google AI / YouTube 精确产品条目排除：218 条
-- `@cn` 标记：126 条；`@ads` 标记：53 条，相关可转换域名仍保留在 `Google.list`
-- Surge 无法等价表达的正则：2 条，已省略并仅报告数量与类型
-- BlackMatrix7 域名类对照：685 条；共同 613 条；自动合并 0 条
-- Sukka `GLOBAL.GOOGLE`：98 条；只读分类，自动合并 0 条
-- Google 官方核心断言：15 条，当前全部被三层产品体系覆盖
-
-这些数字只是当前上游快照。后续同步若实际新增与删除总量超过原列表 10%，构建会停止并等待人工确认。
-
-## YouTube / TikTok 本地审核基线（2026-07-22，Asia/Shanghai）
-
-- v2fly 固定提交：`b086c38db74b626c0a24fdd8ed41e33515577bf9`。
-- `YouTube.list`：178 条；Sukka 9 条域名规则全部覆盖；未启用本地补丁。
-- `TikTok.list`：40 条，其中 v2fly 37 条，本地显式补充 3 条；Sukka 12 条域名规则覆盖 10 条，剩余 2 条继续观察。
-- 两份列表重复构建均为 0 新增、0 删除；表头使用 v2fly 提交时间的北京时间，文件末尾无额外换行。
-- BlackMatrix7 和 Sukka 的具体独有条目不会写入公开报告或自动合并；完整性差异只保留聚合数量。
-
-## BiliBili 本地审核基线（2026-07-22，Asia/Shanghai）
-
-- v2fly 固定提交：`b086c38db74b626c0a24fdd8ed41e33515577bf9`。
-- `BiliBili.list`：55 条，其中 v2fly 53 条，本地显式补充 2 条国际版地区检测主机。
-- Sukka Bilibili International 的 5 条域名规则全部覆盖；其进程规则只计入 unsupported 类型，不写入正式产物。
-- BlackMatrix7 域名类对照 115 条、精确共同 49 条；其 IP、进程、User-Agent 和独有条目不会自动合并。
-- 重复构建为 0 新增、0 删除；表头使用 v2fly 提交时间的北京时间，文件末尾无额外换行。
+项目脚本采用 MIT。v2fly 的 MIT 许可证全文和署名单独保留。
+Sukka 与 BlackMatrix7 只在线读取并生成聚合审计，不在正式产物中转载
+其具体第三方规则。

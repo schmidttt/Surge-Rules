@@ -1,4 +1,4 @@
-name: Sync TikTok rules
+name: Sync Game rules
 
 on:
   workflow_dispatch:
@@ -9,7 +9,7 @@ on:
       timezone: "Asia/Shanghai"
 
 concurrency:
-  group: tiktok-rules-sync
+  group: game-rules-sync
   cancel-in-progress: false
 
 jobs:
@@ -36,12 +36,12 @@ jobs:
           python-version: "3.12"
 
       - name: Run offline tests
-        run: python3 -m unittest discover -s tests/media -v
+        run: python3 -m unittest discover -s tests/game -v
 
-      - name: Resolve and pin current upstream commits
+      - name: Resolve and pin current upstream commit
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        run: python3 scripts/media/build_media_rules.py --product tiktok --fetch
+        run: python3 scripts/game/build_game_rules.py --fetch
 
       - name: Validate repository
         run: python3 scripts/validate_repository.py
@@ -53,7 +53,7 @@ jobs:
         id: changes
         shell: bash
         run: |
-          if git diff --quiet -- rules/TikTok reports/tiktok; then
+          if git diff --quiet -- rules/Game rules/GameCN reports/game; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
           else
             echo "changed=true" >> "$GITHUB_OUTPUT"
@@ -64,11 +64,11 @@ jobs:
         id: risk
         shell: bash
         run: |
-          echo "auto_merge=$(jq -r '.auto_merge_eligible' reports/tiktok/change-assessment.json)" >> "$GITHUB_OUTPUT"
-          echo "classification=$(jq -r '.classification' reports/tiktok/change-assessment.json)" >> "$GITHUB_OUTPUT"
-          echo "added=$(jq -r '.added_count' reports/tiktok/change-assessment.json)" >> "$GITHUB_OUTPUT"
-          echo "removed=$(jq -r '.removed_count' reports/tiktok/change-assessment.json)" >> "$GITHUB_OUTPUT"
-          echo "ratio=$(jq -r '.actual_change_ratio' reports/tiktok/change-assessment.json)" >> "$GITHUB_OUTPUT"
+          echo "auto_merge=$(jq -r '.auto_merge_eligible' reports/game/change-assessment.json)" >> "$GITHUB_OUTPUT"
+          echo "classification=$(jq -r '.classification' reports/game/change-assessment.json)" >> "$GITHUB_OUTPUT"
+          echo "added=$(jq -r '.added_count' reports/game/change-assessment.json)" >> "$GITHUB_OUTPUT"
+          echo "removed=$(jq -r '.removed_count' reports/game/change-assessment.json)" >> "$GITHUB_OUTPUT"
+          echo "ratio=$(jq -r '.actual_change_ratio' reports/game/change-assessment.json)" >> "$GITHUB_OUTPUT"
 
       - name: Create or update review branch
         if: steps.changes.outputs.changed == 'true'
@@ -76,20 +76,20 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           BASE_BRANCH: ${{ github.event.repository.default_branch }}
-          REVIEW_BRANCH: automation/tiktok-rules-sync
+          REVIEW_BRANCH: automation/game-rules-sync
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git fetch origin "$REVIEW_BRANCH:refs/remotes/origin/$REVIEW_BRANCH" || true
           git switch -C "$REVIEW_BRANCH"
-          git add rules/TikTok reports/tiktok
-          git commit -m "chore: sync TikTok rules"
+          git add rules/Game rules/GameCN reports/game
+          git commit -m "chore: sync Game rules"
           git push --force-with-lease origin "HEAD:$REVIEW_BRANCH"
 
-          REASONS=$(jq -r 'if (.reasons | length) == 0 then "none" else (.reasons | join(", ")) end' reports/tiktok/change-assessment.json)
-          cat > /tmp/tiktok-rules-pr.md <<EOF
-          Automated TikTok.list refresh.
+          REASONS=$(jq -r 'if (.reasons | length) == 0 then "none" else (.reasons | join(", ")) end' reports/game/change-assessment.json)
+          cat > /tmp/game-rules-pr.md <<EOF
+          Automated Game and GameCN refresh.
 
           - Classification: ${{ steps.risk.outputs.classification }}
           - Added rules: ${{ steps.risk.outputs.added }}
@@ -97,19 +97,19 @@ jobs:
           - Actual change ratio: ${{ steps.risk.outputs.ratio }}
           - Review reasons: ${REASONS}
 
-          v2fly is the only formal upstream. BlackMatrix7 and Sukka remain comparison-only.
-          Detailed changes: reports/tiktok/change-assessment.json
-          Review guide: docs/rules/media/REVIEW_CHECKLIST.md
+          v2fly is the only formal source. GameCN must precede Game in Surge.
+          Review report: reports/game/review.md
+          Review guide: docs/rules/game/REVIEW_CHECKLIST.md
           EOF
 
           if PR_URL=$(gh pr view "$REVIEW_BRANCH" --json url --jq .url 2>/dev/null); then
-            gh pr edit "$PR_URL" --body-file /tmp/tiktok-rules-pr.md
+            gh pr edit "$PR_URL" --body-file /tmp/game-rules-pr.md
           else
             PR_URL=$(gh pr create \
               --base "$BASE_BRANCH" \
               --head "$REVIEW_BRANCH" \
-              --title "chore: review TikTok rules sync" \
-              --body-file /tmp/tiktok-rules-pr.md)
+              --title "chore: review Game rules sync" \
+              --body-file /tmp/game-rules-pr.md)
           fi
           echo "url=$PR_URL" >> "$GITHUB_OUTPUT"
 
@@ -122,11 +122,11 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: gh pr merge "${{ steps.review_pr.outputs.url }}" --squash --delete-branch
 
-      - name: Keep risky refresh for review
+      - name: Keep refresh for review
         if: >-
           steps.changes.outputs.changed == 'true' &&
           (steps.risk.outputs.auto_merge != 'true' ||
            vars.AUTO_MERGE_LOW_RISK != 'true')
         run: >-
-          echo "::warning::TikTok rules refresh requires review:
+          echo "::warning::Game rules refresh requires review:
           ${{ steps.review_pr.outputs.url }}"

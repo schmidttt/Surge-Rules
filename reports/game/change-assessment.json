@@ -1,0 +1,20 @@
+{
+  "actual_change_ratio": 0.0,
+  "added": [],
+  "added_count": 0,
+  "auto_merge_eligible": true,
+  "baseline_rules": 216,
+  "classification": "low-risk",
+  "generated_rules": 216,
+  "reasons": [],
+  "removed": [],
+  "removed_count": 0,
+  "schema_version": 1,
+  "thresholds": {
+    "automatic_deletions_allowed": false,
+    "max_auto_additions": 10,
+    "max_auto_change_ratio": 0.05,
+    "max_build_change_ratio": 0.3
+  },
+  "unsupported_changed": false
+}
