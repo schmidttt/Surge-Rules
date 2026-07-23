@@ -75,5 +75,41 @@
       "platform": "playstation",
       "reason": "single-label-domain-omitted"
     }
-  ]
+  ],
+  "verification": {
+    "auto_resolved_count": 217,
+    "automatic_decision_counts": {
+      "published-game": 187,
+      "published-gamecn": 29,
+      "resolved-by-rule-order": 1
+    },
+    "manual_review": [
+      {
+        "identity": "regexp:^cdn\\d-epicgames-\\d+\\.file\\.myqcloud\\.com$",
+        "platform": "epicgames",
+        "reason": "unsupported-cn-regexp"
+      },
+      {
+        "identity": "regexp:^epicgames-download\\d-\\d+\\.file\\.myqcloud\\.com$",
+        "platform": "epicgames",
+        "reason": "unsupported-cn-regexp"
+      },
+      {
+        "identity": "regexp:^epicgames-download\\d\\.akamaized\\.net$",
+        "platform": "epicgames",
+        "reason": "unsupported-global-regexp"
+      },
+      {
+        "identity": "domain:playstation",
+        "platform": "playstation",
+        "reason": "single-label-domain-omitted"
+      }
+    ],
+    "manual_review_count": 4,
+    "manual_review_fingerprint": "355fa6b4822476f607cbd7c0bafc6d12269ba23c0238f43f80f3a1903149e732",
+    "policy": {
+      "only_unresolved_candidates_require_manual_review": true
+    },
+    "schema_version": 1
+  }
 }

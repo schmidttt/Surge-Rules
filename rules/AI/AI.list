@@ -2,9 +2,10 @@
 # AUTHOR: schmidttt
 # REPO: https://github.com/schmidttt/surge-rules
 # UPDATED: 2026.07.21 22:59:07
-# TOTAL: 127
+# TOTAL: 128
 #
 # ======== 上游同步规则 ========
+DOMAIN,ai.com
 DOMAIN,api.jetbrains.ai
 DOMAIN,browser-intake-datadoghq.com
 DOMAIN,copilot-proxy.githubusercontent.com

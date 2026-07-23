@@ -5,8 +5,9 @@
 1. 查看 `change-assessment.json` 的 `reasons`、新增和删除数量。
 2. 任何删除都核对 v2fly 对应提交，确认不是误删、改名或上游解析异常。
 3. 核对核心域名仍存在，输出总数没有异常下降。
-4. 查看 `reference-audit.json`：Sukka 未覆盖数量增加时，判断是 v2fly 遗漏还是两者范围不同。
-5. BlackMatrix7 仅作差异提示；不要因其独有条目自动扩大产品范围。
+4. 查看 `reference-audit.json` 的 `verification.manual_review`；只有
+   Sukka 与 BlackMatrix7 共同指出但仍未覆盖的差异需要人工判断。
+5. 单一参考源独有条目会自动记录并结束；不要因此扩大产品范围。
 6. 新增补丁前记录理由；优先依据实际抓包、产品官方资料或至少两个相互独立的来源。
 7. 合并后手动运行一次对应工作流；无变化应不再创建新 PR。
 

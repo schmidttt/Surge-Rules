@@ -60,7 +60,8 @@ Generative Language API、NotebookLM、Jules 等 Google 自有 AI 服务。
 
 两张表不得存在父子域覆盖。Sukka `ai.conf` 只作聚合覆盖审计；其中范围
 过宽、归属不明或只适合 URL/关键词匹配的条目不会自动并入。经官方文档
-确认的精确主机可通过人工补丁加入，例如 JetBrains AI 端点。
+或实际服务确认的精确主机可通过人工补丁加入，例如 JetBrains AI、
+`g.ai` 和 `ai.com`；共享的 `api.github.com` 不会被扩大为 AI 专用规则。
 
 ## Google 与 GoogleCN
 
@@ -124,12 +125,18 @@ Surge 中必须先引用 GameCN。
 - 新增数量、真实变动率和大幅变更分别设独立阈值；
 - 核心域名、最小规则数、语法、重复项和文件末尾换行均会校验；
 - 不支持的上游语法发生变化时必须审核；
-- Sukka 覆盖差距增加会阻止 Google 低风险自动合并；
+- 全部九张规则表都必须生成统一 `verification` 报告；
+- 只读参考源已覆盖、单一来源差异和已确认例外由程序自动处理；
+- 两个以上参考源共同指出但无法确认的差异才进入人工审核；
+- 人工审核集合发生变化会阻止对应规则的低风险自动合并；
 - GoogleAI 与 AI 的父子域覆盖、AI 中的 Google/国内 AI 泄漏会直接失败；
-- Sukka AI 覆盖差距增加或其审计不可用时，AI 更新不能自动合并；
+- 证据目录无效或精确主机决定没有落实到产物会直接失败；
 - GoogleCN 新的模糊候选不会发布，并会阻止自动合并；
 - Game 与 GameCN 精确重复、旧仓库大小写和无效 raw 路径会失败；
 - 所有生成文件先写入暂存目录，通过校验后再逐文件替换。
+
+具体判定流程与人工审核入口见
+[`docs/rules/VERIFICATION.md`](docs/rules/VERIFICATION.md)。
 
 仓库变量：
 
@@ -146,6 +153,7 @@ Surge 中必须先引用 GameCN。
 surge-rules/
 ├── .github/workflows/
 ├── docs/rules/
+│   ├── VERIFICATION.md
 │   ├── google/
 │   ├── googlecn/
 │   ├── ai/
@@ -174,6 +182,7 @@ surge-rules/
 │   └── GameCN/GameCN.list
 ├── scripts/
 │   ├── shared/v2fly.py
+│   ├── shared/reference_verifier.py
 │   ├── google/build_google_rules.py
 │   ├── googlecn/build_googlecn_rules.py
 │   ├── ai/build_ai_rules.py
@@ -186,6 +195,7 @@ surge-rules/
 ## 本地验证
 
 ```bash
+python3 -m unittest discover -s tests/shared -v
 python3 -m unittest discover -s tests/google -v
 python3 -m unittest discover -s tests/googlecn -v
 python3 -m unittest discover -s tests/ai -v

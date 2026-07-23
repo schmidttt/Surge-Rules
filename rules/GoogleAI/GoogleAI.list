@@ -2,7 +2,7 @@
 # AUTHOR: schmidttt
 # REPO: https://github.com/schmidttt/surge-rules
 # UPDATED: 2026.07.21 22:59:07
-# TOTAL: 40
+# TOTAL: 41
 #
 # ======== 上游同步规则 ========
 DOMAIN,ai.google.dev
@@ -13,6 +13,7 @@ DOMAIN,antigravity.googleapis.com
 DOMAIN,cloudaicompanion.googleapis.com
 DOMAIN,cloudcode-pa.googleapis.com
 DOMAIN,daily-cloudcode-pa.googleapis.com
+DOMAIN,g.ai
 DOMAIN,notebooklm-pa.googleapis.com
 DOMAIN,notebooklm.googleapis.com
 DOMAIN,webchannel-alkalimakersuite-pa.clients6.google.com

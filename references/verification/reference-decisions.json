@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "decisions": [
+    {
+      "scopes": [
+        "ai",
+        "google"
+      ],
+      "kind": "domain",
+      "value": "cloudcode-pa.googleapis.com",
+      "action": "accept-exact-host",
+      "target": "GoogleAI",
+      "reason": "google-documents-this-as-an-exact-gemini-code-assist-endpoint",
+      "evidence": [
+        "https://docs.cloud.google.com/gemini/docs/codeassist/network-access"
+      ]
+    },
+    {
+      "scopes": [
+        "ai",
+        "google"
+      ],
+      "kind": "domain",
+      "value": "g.ai",
+      "action": "accept-exact-host",
+      "target": "GoogleAI",
+      "reason": "the-exact-host-redirects-to-a-google-ai-search-entry",
+      "evidence": [
+        "https://g.ai/"
+      ]
+    },
+    {
+      "scopes": [
+        "ai"
+      ],
+      "kind": "domain",
+      "value": "ai.com",
+      "action": "accept-exact-host",
+      "target": "AI",
+      "reason": "the-exact-host-operates-an-independent-ai-agent-service",
+      "evidence": [
+        "https://ai.com/"
+      ]
+    },
+    {
+      "scopes": [
+        "ai"
+      ],
+      "kind": "full",
+      "value": "api.github.com",
+      "action": "exclude-shared-service",
+      "target": null,
+      "reason": "github-rest-api-is-shared-by-copilot-and-non-ai-github-features",
+      "evidence": [
+        "https://docs.github.com/en/rest"
+      ]
+    },
+    {
+      "scopes": [
+        "google"
+      ],
+      "kind": "domain",
+      "value": "recaptcha.net",
+      "action": "accept-exact-host",
+      "target": "Google",
+      "reason": "the-generated-google-output-intentionally-covers-only-the-known-root-host",
+      "evidence": [
+        "https://developers.google.com/recaptcha/docs/faq"
+      ]
+    }
+  ]
+}

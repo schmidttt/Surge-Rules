@@ -34,6 +34,12 @@ from shared.v2fly import (  # noqa: E402
     rule_to_surge,
     write_staged_outputs,
 )
+from shared.reference_verifier import (  # noqa: E402
+    ReferenceVerificationError,
+    load_resolution_catalog,
+    summarize_generation_decisions,
+    verify_reference_sources,
+)
 
 
 GOOGLE_AI_SOURCE = "google-deepmind"
@@ -272,6 +278,7 @@ def audit_sukka(
     text: str,
     google_ai: Sequence[Rule],
     ai: Sequence[Rule],
+    resolutions: Optional[Mapping[Tuple[str, str], Mapping[str, object]]] = None,
 ) -> Dict[str, object]:
     if not text:
         return {
@@ -279,23 +286,36 @@ def audit_sukka(
             "domain_rules": 0,
             "covered_by_google_ai": 0,
             "covered_by_ai": 0,
+            "raw_not_covered_by_output": 0,
             "uncovered": 0,
             "unsupported_types": {},
+            "verification": verify_reference_sources(
+                {"sukka": []},
+                {"GoogleAI": google_ai, "AI": ai},
+                resolutions,
+            ),
         }
     rules, unsupported = parse_sukka_ai(text)
     google_covered = sum(covered_by_any(rule, google_ai) for rule in rules)
     ai_covered = sum(covered_by_any(rule, ai) for rule in rules)
-    uncovered = sum(
+    raw_uncovered = sum(
         not covered_by_any(rule, google_ai) and not covered_by_any(rule, ai)
         for rule in rules
+    )
+    verification = verify_reference_sources(
+        {"sukka": rules},
+        {"GoogleAI": google_ai, "AI": ai},
+        resolutions,
     )
     return {
         "available": True,
         "domain_rules": len(rules),
         "covered_by_google_ai": google_covered,
         "covered_by_ai": ai_covered,
-        "uncovered": uncovered,
+        "raw_not_covered_by_output": raw_uncovered,
+        "uncovered": verification["manual_review_count"],
         "unsupported_types": dict(sorted(unsupported.items())),
+        "verification": verification,
     }
 
 
@@ -328,6 +348,11 @@ def load_previous_sukka_audit(path: Path) -> Optional[Dict[str, object]]:
             "domain_rules": int(audit["domain_rules"]),
             "uncovered": int(audit["uncovered"]),
             "unsupported_types": dict(audit["unsupported_types"]),
+            "manual_review_fingerprint": (
+                str(audit["verification"]["manual_review_fingerprint"])
+                if "verification" in audit
+                else None
+            ),
         }
     except (KeyError, OSError, TypeError, ValueError, json.JSONDecodeError) as exc:
         raise BuildError("Could not read existing Sukka audit: {}".format(path)) from exc
@@ -380,9 +405,24 @@ def assess_change(
     elif (
         previous_sukka_audit is not None
         and previous_sukka_audit["available"]
-        and sukka_audit["uncovered"] > previous_sukka_audit["uncovered"]
     ):
-        reasons.append("sukka-uncovered-count-increased")
+        current_verification = sukka_audit.get("verification")
+        current_fingerprint = (
+            current_verification.get("manual_review_fingerprint")
+            if isinstance(current_verification, dict)
+            else None
+        )
+        previous_fingerprint = previous_sukka_audit.get(
+            "manual_review_fingerprint"
+        )
+        if (
+            isinstance(current_fingerprint, str)
+            and previous_fingerprint is not None
+            and current_fingerprint != previous_fingerprint
+        ):
+            reasons.append("sukka-manual-review-set-changed")
+        elif sukka_audit["uncovered"] > previous_sukka_audit["uncovered"]:
+            reasons.append("sukka-uncovered-count-increased")
     if (
         previous_sukka_audit is not None
         and previous_sukka_audit["available"]
@@ -409,6 +449,17 @@ def assess_change(
         "sukka_uncovered": sukka_audit["uncovered"],
         "previous_sukka_uncovered": (
             previous_sukka_audit["uncovered"]
+            if previous_sukka_audit is not None
+            and previous_sukka_audit["available"]
+            else None
+        ),
+        "sukka_manual_review_fingerprint": (
+            sukka_audit["verification"]["manual_review_fingerprint"]
+            if isinstance(sukka_audit.get("verification"), dict)
+            else None
+        ),
+        "previous_sukka_manual_review_fingerprint": (
+            previous_sukka_audit.get("manual_review_fingerprint")
             if previous_sukka_audit is not None
             and previous_sukka_audit["available"]
             else None
@@ -457,10 +508,11 @@ def render_review_markdown(
         "## Sukka 设计对照",
         "",
         "- Sukka 的 `ai.conf` 是人工维护的混合 AI 表，本项目只用它检查覆盖情况，不直接合并条目。",
-        "- 对照域名规则：{} 条；GoogleAI 覆盖：{}；AI 覆盖：{}；未覆盖：{}。".format(
+        "- 对照域名规则：{} 条；GoogleAI 覆盖：{}；AI 覆盖：{}；原始范围差异：{}；仍需人工：{}。".format(
             audit["domain_rules"],
             audit["covered_by_google_ai"],
             audit["covered_by_ai"],
+            audit["raw_not_covered_by_output"],
             audit["uncovered"],
         ),
         "- Sukka 非域名类型：`{}`。".format(audit["unsupported_types"]),
@@ -555,6 +607,13 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     existing_ai = load_existing_rules(ai_path)
     previous_unsupported = load_previous_unsupported(report_path)
     previous_sukka_audit = load_previous_sukka_audit(report_path)
+    try:
+        resolutions = load_resolution_catalog(
+            project_root / "references/verification/reference-decisions.json",
+            "ai",
+        )
+    except ReferenceVerificationError as exc:
+        raise BuildError(str(exc)) from exc
     validate_outputs(
         google_ai,
         ai,
@@ -564,7 +623,12 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         existing_ai,
         args.allow_large_change,
     )
-    sukka_audit = audit_sukka(sukka_text, google_ai, ai)
+    sukka_audit = audit_sukka(
+        sukka_text,
+        google_ai,
+        ai,
+        resolutions,
+    )
     assessment = assess_change(
         google_ai,
         ai,
@@ -574,6 +638,21 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         previous_unsupported,
         sukka_audit,
         previous_sukka_audit,
+    )
+    verification = summarize_generation_decisions(
+        {
+            "published-googleai": len(google_ai),
+            "published-ai": len(ai),
+            "excluded-google-partition": report_details["counts"].get(
+                "google_partition_excluded",
+                0,
+            ),
+            "excluded-domestic-partition": report_details["counts"].get(
+                "domestic_partition_excluded",
+                0,
+            ),
+        },
+        report_details["unsupported_omitted"],
     )
     report = {
         "schema_version": 1,
@@ -601,6 +680,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             "unsupported_rules_are_report_only": True,
         },
         **report_details,
+        "verification": verification,
         "sukka_audit": sukka_audit,
     }
     files = {

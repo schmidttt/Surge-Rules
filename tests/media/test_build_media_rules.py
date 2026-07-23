@@ -132,7 +132,7 @@ class SafetyTests(unittest.TestCase):
         )
         self.assertTrue(assessment["auto_merge_eligible"])
 
-    def test_increased_sukka_gap_requires_review(self):
+    def test_increased_manual_review_count_requires_review(self):
         config = replace(
             MODULE.PRODUCTS["tiktok"],
             auto_merge_max_change_ratio=1.0,
@@ -153,7 +153,41 @@ class SafetyTests(unittest.TestCase):
             {"sources": {"sukka": {"not_covered_by_generated_count": 1}}},
         )
         self.assertFalse(assessment["auto_merge_eligible"])
-        self.assertIn("sukka-reference-gap-increased", assessment["reasons"])
+        self.assertIn(
+            "reference-manual-review-increased",
+            assessment["reasons"],
+        )
+
+    def test_changed_manual_review_set_requires_review(self):
+        config = replace(
+            MODULE.PRODUCTS["tiktok"],
+            auto_merge_max_change_ratio=1.0,
+        )
+        existing = {
+            ("domain", "tiktok.com"),
+            ("domain", "tiktokv.com"),
+            ("domain", "tiktokcdn.com"),
+        }
+        rules = [MODULE.Rule(*identity) for identity in existing]
+        assessment = MODULE.assess_change(
+            config,
+            rules,
+            existing,
+            [],
+            {"unsupported_omitted": []},
+            1,
+            {
+                "verification": {
+                    "manual_review_count": 1,
+                    "manual_review_fingerprint": "a" * 64,
+                }
+            },
+            "b" * 64,
+        )
+        self.assertIn(
+            "reference-manual-review-set-changed",
+            assessment["reasons"],
+        )
 
     def test_core_suffix_disappearance_fails(self):
         config = replace(MODULE.PRODUCTS["tiktok"], minimum_rules=1)
@@ -212,6 +246,8 @@ class IntegrationTests(unittest.TestCase):
                 self.assertFalse(
                     audit["policy"]["third_party_reference_entries_persisted"]
                 )
+                self.assertIn("verification", audit)
+                self.assertIn("manual_review_count", audit["verification"])
         finally:
             MODULE.PRODUCTS.clear()
             MODULE.PRODUCTS.update(originals)

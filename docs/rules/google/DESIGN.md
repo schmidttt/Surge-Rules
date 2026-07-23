@@ -36,7 +36,11 @@ BlackMatrix7 的 `Google.list` 只用于报告：
 Google AI → YouTube → 剩余 Google → needs_review
 ```
 
-分类只以总量和各分类数量写入 `reports/google/reference-audit.json`，不会保存 Sukka 的具体规则条目，也不会写入规则产物。Sukka 的 `GLOBAL.GOOGLE` 服务其个人 DNS/global 逻辑，包含 YouTube 和特殊运行归类，因此不能作为全量 Google 真值表。
+分类统计写入 `reports/google/reference-audit.json`，不会把 Sukka 的条目
+直接写入规则产物。统一验证只持久化已有证据的例外和多个参考源共同指出
+的未决最小集合，不保存完整第三方规则。Sukka 的 `GLOBAL.GOOGLE` 服务其
+个人 DNS/global 逻辑，包含 YouTube 和特殊运行归类，因此不能作为全量
+Google 真值表。
 
 `references/google/official-core.txt` 来自 Google Cloud 和 ChromeOS 产品级官方文档。它只用于核心覆盖断言：任一断言无法被上述三层产品体系覆盖时，构建失败。它不是、也不会被描述为 Google 全生态完整列表。
 
@@ -123,7 +127,7 @@ Google 验证跳转天然使用同一出口。非 Google 海外 AI 由 `AI.list`
 - 未支持的 keyword/regexp 数量和类型是否被记录；
 - 核心后缀 `google.com`、`googleapis.com`、`gstatic.com` 是否仍在剩余 Google 中；
 - Google 官方产品核心断言是否全部被三层产品体系覆盖；
-- Sukka 参考项的分类总量和待审核数量是否异常；
+- Sukka 与 BlackMatrix7 的统一参考验证是否产生新的人工审核项；
 - 与现有产物相比，条目数量是否变化超过阈值（默认 10%）。
 
 首次生成时没有旧产物，因此跳过变化率检查。以后遇到超过阈值的变化，构建失败，旧文件保持不变；需要人工确认后使用 `--allow-large-change` 重新生成。

@@ -16,6 +16,19 @@ SPEC.loader.exec_module(MODULE)
 
 
 class ParserTests(unittest.TestCase):
+    def test_load_published_rules_prefers_existing_product_output(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "GoogleAI.list"
+            path.write_text("DOMAIN,g.ai", encoding="utf-8")
+            rules = MODULE.load_published_rules(
+                path,
+                [MODULE.Rule("domain", "fallback.example")],
+            )
+            self.assertEqual(
+                [rule.identity for rule in rules],
+                [("full", "g.ai")],
+            )
+
     def test_include_attributes_and_affiliation(self):
         tree = MODULE.load_local_tree(FIXTURE_ROOT / "v2fly-data")
         expanded = MODULE.expand_list(tree, "google")
@@ -202,7 +215,7 @@ class BuildTests(unittest.TestCase):
         self.assertFalse(assessment["auto_merge_eligible"])
         self.assertIn("unsupported-rule-set-changed", assessment["reasons"])
 
-    def test_increased_sukka_gap_requires_review(self):
+    def test_increased_reference_manual_review_requires_review(self):
         existing = {
             ("domain", "google.com"),
             ("domain", "googleapis.com"),
@@ -221,7 +234,39 @@ class BuildTests(unittest.TestCase):
             {"global_google": 2, "google_ai": 1},
         )
         self.assertFalse(assessment["auto_merge_eligible"])
-        self.assertIn("sukka-reference-gap-increased", assessment["reasons"])
+        self.assertIn(
+            "reference-manual-review-increased",
+            assessment["reasons"],
+        )
+
+    def test_changed_reference_manual_review_set_requires_review(self):
+        existing = {
+            ("domain", "google.com"),
+            ("domain", "googleapis.com"),
+            ("domain", "gstatic.com"),
+        }
+        main = [MODULE.Rule(kind, value) for kind, value in existing]
+        assessment = MODULE.assess_change(
+            main,
+            existing,
+            [],
+            set(),
+            20,
+            0.50,
+            0.10,
+            {
+                "manual_review": 2,
+                "manual_review_fingerprint": "a" * 64,
+            },
+            {
+                "manual_review": 2,
+                "manual_review_fingerprint": "b" * 64,
+            },
+        )
+        self.assertIn(
+            "reference-manual-review-set-changed",
+            assessment["reasons"],
+        )
 
     def test_blackmatrix_is_comparison_only(self):
         main, _, _ = MODULE.build_outputs(self.tree, [], [])
@@ -301,6 +346,7 @@ class IntegrationTests(unittest.TestCase):
             self.assertIn('"entries_persisted": false', audit)
             self.assertIn('"third_party_reference_entries_persisted": false', audit)
             self.assertIn('"reference_entries_auto_merged": false', audit)
+            self.assertIn('"verification"', audit)
 
 
 if __name__ == "__main__":

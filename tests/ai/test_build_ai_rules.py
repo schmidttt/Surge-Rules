@@ -113,7 +113,12 @@ class AuditTests(unittest.TestCase):
         self.assertEqual(audit["domain_rules"], 5)
         self.assertEqual(audit["covered_by_google_ai"], 2)
         self.assertEqual(audit["covered_by_ai"], 2)
-        self.assertEqual(audit["uncovered"], 1)
+        self.assertEqual(audit["raw_not_covered_by_output"], 1)
+        self.assertEqual(audit["uncovered"], 0)
+        self.assertEqual(
+            audit["verification"]["decision_counts"]["single-reference-only"],
+            1,
+        )
         self.assertEqual(audit["unsupported_types"], {"URL-REGEX": 1})
 
     def test_unchanged_baseline_can_be_low_risk(self):
@@ -180,6 +185,42 @@ class AuditTests(unittest.TestCase):
         )
         self.assertFalse(assessment["auto_merge_eligible"])
         self.assertIn("sukka-uncovered-count-increased", assessment["reasons"])
+
+    def test_changed_manual_review_set_requires_review(self):
+        google_ai, ai, _, _, report = MODULE.build_rules(
+            make_tree(), [], [], [], []
+        )
+        unsupported = {
+            "{}|{}|{}".format(
+                item["source"], item["identity"], item["reason"]
+            )
+            for item in report["unsupported_omitted"]
+        }
+        current_audit = MODULE.audit_sukka(
+            "DOMAIN-SUFFIX,current.example",
+            google_ai,
+            ai,
+        )
+        assessment = MODULE.assess_change(
+            google_ai,
+            ai,
+            google_ai,
+            ai,
+            report["unsupported_omitted"],
+            unsupported,
+            current_audit,
+            {
+                "available": True,
+                "domain_rules": 1,
+                "uncovered": 0,
+                "unsupported_types": {},
+                "manual_review_fingerprint": "0" * 64,
+            },
+        )
+        self.assertIn(
+            "sukka-manual-review-set-changed",
+            assessment["reasons"],
+        )
 
 
 class IntegrationTests(unittest.TestCase):

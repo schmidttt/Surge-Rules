@@ -664,5 +664,130 @@
     "committed_at": "2026-07-21T14:59:07Z",
     "repository": "v2fly/domain-list-community",
     "requested_ref": "master"
+  },
+  "verification": {
+    "auto_resolved_count": 104,
+    "automatic_decision_counts": {
+      "approved": 35,
+      "excluded-by-policy": 69
+    },
+    "manual_review": [
+      {
+        "identity": "full:c.android.clients.google.com",
+        "reason": "new-or-ambiguous-cn-host",
+        "rule": "DOMAIN,c.android.clients.google.com"
+      },
+      {
+        "identity": "full:cache-management-prod.google.com",
+        "reason": "new-or-ambiguous-cn-host",
+        "rule": "DOMAIN,cache-management-prod.google.com"
+      },
+      {
+        "identity": "full:checkin.gstatic.com",
+        "reason": "new-or-ambiguous-cn-host",
+        "rule": "DOMAIN,checkin.gstatic.com"
+      },
+      {
+        "identity": "full:clientservices.googleapis.com",
+        "reason": "new-or-ambiguous-cn-host",
+        "rule": "DOMAIN,clientservices.googleapis.com"
+      },
+      {
+        "identity": "full:cn.widevine.com",
+        "reason": "new-or-ambiguous-cn-host",
+        "rule": "DOMAIN,cn.widevine.com"
+      },
+      {
+        "identity": "full:dg-meta.video.google.com",
+        "reason": "new-or-ambiguous-cn-host",
+        "rule": "DOMAIN,dg-meta.video.google.com"
+      },
+      {
+        "identity": "full:recaptcha-cn.net",
+        "reason": "new-or-ambiguous-cn-host",
+        "rule": "DOMAIN,recaptcha-cn.net"
+      },
+      {
+        "identity": "full:recaptcha.net",
+        "reason": "new-or-ambiguous-cn-host",
+        "rule": "DOMAIN,recaptcha.net"
+      },
+      {
+        "identity": "full:redirector.bdn.dev",
+        "reason": "new-or-ambiguous-cn-host",
+        "rule": "DOMAIN,redirector.bdn.dev"
+      },
+      {
+        "identity": "full:redirector.c.pack.google.com",
+        "reason": "new-or-ambiguous-cn-host",
+        "rule": "DOMAIN,redirector.c.pack.google.com"
+      },
+      {
+        "identity": "full:redirector.gcpcdn.gvt1.com",
+        "reason": "new-or-ambiguous-cn-host",
+        "rule": "DOMAIN,redirector.gcpcdn.gvt1.com"
+      },
+      {
+        "identity": "full:redirector.gvt1.com",
+        "reason": "new-or-ambiguous-cn-host",
+        "rule": "DOMAIN,redirector.gvt1.com"
+      },
+      {
+        "identity": "full:redirector.offline-maps.gvt1.com",
+        "reason": "new-or-ambiguous-cn-host",
+        "rule": "DOMAIN,redirector.offline-maps.gvt1.com"
+      },
+      {
+        "identity": "full:redirector.snap.gvt1.com",
+        "reason": "new-or-ambiguous-cn-host",
+        "rule": "DOMAIN,redirector.snap.gvt1.com"
+      },
+      {
+        "identity": "full:redirector.xn--ngstr-lra8j.com",
+        "reason": "new-or-ambiguous-cn-host",
+        "rule": "DOMAIN,redirector.xn--ngstr-lra8j.com"
+      },
+      {
+        "identity": "full:safebrowsing-cache.google.com",
+        "reason": "new-or-ambiguous-cn-host",
+        "rule": "DOMAIN,safebrowsing-cache.google.com"
+      },
+      {
+        "identity": "full:safebrowsing.googleapis.com",
+        "reason": "new-or-ambiguous-cn-host",
+        "rule": "DOMAIN,safebrowsing.googleapis.com"
+      },
+      {
+        "identity": "full:tac.googleapis.com",
+        "reason": "new-or-ambiguous-cn-host",
+        "rule": "DOMAIN,tac.googleapis.com"
+      },
+      {
+        "identity": "full:update.googleapis.com",
+        "reason": "new-or-ambiguous-cn-host",
+        "rule": "DOMAIN,update.googleapis.com"
+      },
+      {
+        "identity": "full:wear.googleapis.com",
+        "reason": "new-or-ambiguous-cn-host",
+        "rule": "DOMAIN,wear.googleapis.com"
+      },
+      {
+        "identity": "full:www.recaptcha-cn.net",
+        "reason": "new-or-ambiguous-cn-host",
+        "rule": "DOMAIN,www.recaptcha-cn.net"
+      },
+      {
+        "identity": "full:www.recaptcha.net",
+        "reason": "new-or-ambiguous-cn-host",
+        "rule": "DOMAIN,www.recaptcha.net"
+      }
+    ],
+    "manual_review_count": 22,
+    "manual_review_fingerprint": "c709b20e7b92a6256f949fa85e1dbd7471629aa653f59513d9076cbf3e9f3e91",
+    "policy": {
+      "only_unresolved_candidates_require_manual_review": true
+    },
+    "schema_version": 1
   }
 }

@@ -59,5 +59,27 @@
     "committed_at": "2026-07-21T14:59:07Z",
     "repository": "v2fly/domain-list-community",
     "requested_ref": "master"
+  },
+  "verification": {
+    "auto_resolved_count": 890,
+    "automatic_decision_counts": {
+      "published": 890
+    },
+    "manual_review": [
+      {
+        "identity": "regexp:^r+[0-9]+(---|\\.)sn-(2x3|ni5|j5o)\\w{5}\\.googlevideo\\.com$",
+        "reason": "unsupported-v2fly-syntax"
+      },
+      {
+        "identity": "regexp:^r+[0-9]+(---|\\.)sn-(2x3|ni5|j5o)\\w{5}\\.xn--ngstr-lra8j\\.com$",
+        "reason": "unsupported-v2fly-syntax"
+      }
+    ],
+    "manual_review_count": 2,
+    "manual_review_fingerprint": "3e527be45e770f3652df4bd3ee6078931aa05c71e331e89dc16a44feb339a85b",
+    "policy": {
+      "only_unresolved_candidates_require_manual_review": true
+    },
+    "schema_version": 1
   }
 }

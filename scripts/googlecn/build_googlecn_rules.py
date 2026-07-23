@@ -32,6 +32,7 @@ from shared.v2fly import (  # noqa: E402
     rule_to_surge,
     write_staged_outputs,
 )
+from shared.reference_verifier import summarize_generation_decisions  # noqa: E402
 
 
 AUTO_APPROVED_SUFFIXES = frozenset(
@@ -472,6 +473,13 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     assessment = assess_change(
         rules, existing_rules, decisions, previous_review
     )
+    verification = summarize_generation_decisions(
+        {
+            "approved": len(decisions["approved"]),
+            "excluded-by-policy": len(decisions["excluded"]),
+        },
+        decisions["review"],
+    )
 
     report = {
         "schema_version": 1,
@@ -490,6 +498,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         },
         "counts": counts,
         "decisions": decisions,
+        "verification": verification,
     }
     files = {
         Path("rules/GoogleCN/GoogleCN.list"): render_rules(

@@ -26,6 +26,18 @@ from pathlib import Path
 from typing import DefaultDict, Dict, FrozenSet, Iterable, List, Mapping, Optional, Sequence, Set, Tuple
 
 
+SCRIPTS_ROOT = Path(__file__).resolve().parents[1]
+if str(SCRIPTS_ROOT) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS_ROOT))
+
+from shared.reference_verifier import (  # noqa: E402
+    ReferenceVerificationError,
+    load_resolution_catalog,
+    summarize_generation_decisions,
+    verify_reference_sources,
+)
+
+
 V2FLY_REPOSITORY = "v2fly/domain-list-community"
 V2FLY_DEFAULT_REF = "master"
 BLACKMATRIX_REPOSITORY = "blackmatrix7/ios_rule_script"
@@ -491,8 +503,9 @@ def assess_change(
     existing: Set[Tuple[str, str]],
     omitted: Sequence[str],
     existing_report: Optional[Dict[str, object]],
-    sukka_gap_count: int,
+    manual_review_count: int,
     existing_audit: Optional[Dict[str, object]],
+    manual_review_fingerprint: Optional[str] = None,
 ) -> Dict[str, object]:
     current = {rule.identity for rule in rules}
     added = current.difference(existing)
@@ -501,8 +514,25 @@ def assess_change(
     ratio = change_count / max(len(existing), 1)
     previous_omitted = get_nested_strings(existing_report, ("unsupported_omitted",))
     omitted_changed = previous_omitted is None or previous_omitted != set(omitted)
-    previous_sukka_gap = get_nested_int(
-        existing_audit, ("sources", "sukka", "not_covered_by_generated_count")
+    previous_manual_review = get_nested_int(
+        existing_audit, ("verification", "manual_review_count")
+    )
+    if previous_manual_review is None:
+        previous_manual_review = get_nested_int(
+            existing_audit,
+            ("sources", "sukka", "not_covered_by_generated_count"),
+        )
+    previous_fingerprint: Optional[str] = None
+    if existing_audit is not None:
+        value = existing_audit.get("verification")
+        if isinstance(value, dict) and isinstance(
+            value.get("manual_review_fingerprint"), str
+        ):
+            previous_fingerprint = value["manual_review_fingerprint"]
+    manual_review_set_changed = (
+        manual_review_fingerprint is not None
+        and previous_fingerprint is not None
+        and manual_review_fingerprint != previous_fingerprint
     )
 
     reasons: List[str] = []
@@ -516,8 +546,13 @@ def assess_change(
         reasons.append("actual-change-ratio-above-auto-merge-limit")
     if omitted_changed:
         reasons.append("unsupported-rule-set-changed")
-    if previous_sukka_gap is not None and sukka_gap_count > previous_sukka_gap:
-        reasons.append("sukka-reference-gap-increased")
+    if manual_review_set_changed:
+        reasons.append("reference-manual-review-set-changed")
+    elif (
+        previous_manual_review is not None
+        and manual_review_count > previous_manual_review
+    ):
+        reasons.append("reference-manual-review-increased")
 
     eligible = not reasons
     return {
@@ -532,8 +567,11 @@ def assess_change(
         "actual_change_count": change_count,
         "actual_change_ratio": round(ratio, 6),
         "unsupported_changed": omitted_changed,
-        "sukka_gap_count": sukka_gap_count,
-        "previous_sukka_gap_count": previous_sukka_gap,
+        "reference_manual_review_count": manual_review_count,
+        "previous_reference_manual_review_count": previous_manual_review,
+        "reference_manual_review_fingerprint": manual_review_fingerprint,
+        "previous_reference_manual_review_fingerprint": previous_fingerprint,
+        "reference_manual_review_set_changed": manual_review_set_changed,
         "reasons": reasons,
         "added": [rule_to_surge(Rule(*identity)) for identity in sorted(added)],
         "removed": [rule_to_surge(Rule(*identity)) for identity in sorted(removed)],
@@ -732,17 +770,36 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     existing_audit = load_existing_report(audit_path)
     validate_output(config, rules, existing, args.allow_large_change)
 
-    blackmatrix_audit = (
-        compare_reference(rules, blackmatrix_text)
-        if blackmatrix_text
-        else {"status": "not-provided"}
+    if blackmatrix_text:
+        blackmatrix_rules, _ = parse_surge_rules(blackmatrix_text)
+        blackmatrix_audit = compare_reference(rules, blackmatrix_text)
+    else:
+        blackmatrix_rules = []
+        blackmatrix_audit = {"status": "not-provided"}
+    if sukka_text:
+        sukka_rules, _ = parse_sukka_service(sukka_text, config.sukka_constant)
+        sukka_audit = compare_sukka(rules, sukka_text, config.sukka_constant)
+    else:
+        sukka_rules = []
+        sukka_audit = {
+            "status": "not-provided",
+            "not_covered_by_generated_count": 0,
+        }
+    try:
+        resolutions = load_resolution_catalog(
+            project_root / "references/verification/reference-decisions.json",
+            "media.{}".format(config.key),
+        )
+    except ReferenceVerificationError as exc:
+        raise BuildError(str(exc)) from exc
+    verification = verify_reference_sources(
+        {
+            "blackmatrix": blackmatrix_rules,
+            "sukka": sukka_rules,
+        },
+        {config.display_name: rules},
+        resolutions,
     )
-    sukka_audit = (
-        compare_sukka(rules, sukka_text, config.sukka_constant)
-        if sukka_text
-        else {"status": "not-provided", "not_covered_by_generated_count": 0}
-    )
-    sukka_gap_count = int(sukka_audit.get("not_covered_by_generated_count", 0))
 
     assessment = assess_change(
         config,
@@ -750,8 +807,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         existing,
         omitted,
         existing_report,
-        sukka_gap_count,
+        int(verification["manual_review_count"]),
         existing_audit,
+        str(verification["manual_review_fingerprint"]),
     )
     reference_audit = {
         "schema_version": 1,
@@ -777,6 +835,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                 **sukka_audit,
             },
         },
+        "verification": verification,
     }
     report = {
         "schema_version": 1,
@@ -790,6 +849,16 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         },
         "counts": counts,
         "unsupported_omitted": omitted,
+        "verification": summarize_generation_decisions(
+            {"published": len(rules)},
+            [
+                {
+                    "identity": value,
+                    "reason": "unsupported-v2fly-syntax",
+                }
+                for value in omitted
+            ],
+        ),
         "safety": {
             "formal_upstream": V2FLY_REPOSITORY,
             "blackmatrix_auto_merged": False,

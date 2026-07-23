@@ -36,7 +36,9 @@ jobs:
           python-version: "3.12"
 
       - name: Run offline tests
-        run: python3 -m unittest discover -s tests/game -v
+        run: |
+          python3 -m unittest discover -s tests/shared -v
+          python3 -m unittest discover -s tests/game -v
 
       - name: Resolve and pin current upstream commit
         env:

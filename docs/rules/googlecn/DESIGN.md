@@ -18,6 +18,9 @@ GoogleCN 是一张固定 `DIRECT` 的保守规则表，不是“所有 Google `@
 新的隔离条目阻止自动合并；未变化的历史隔离条目不会重复阻断。人工
 `allow` 只能处理模糊项，不能绕过硬排除。
 
+所有批准、排除和隔离决定同时写入统一 `verification` 区块；日常审核只
+需要查看其中的 `manual_review`，无需重新查询已自动决定的候选。
+
 ## DOMAIN 与 DOMAIN-SUFFIX
 
 - 明确的中国专属注册域可以使用 `DOMAIN-SUFFIX`。
