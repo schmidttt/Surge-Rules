@@ -35,7 +35,7 @@ SUKKA_REPOSITORY = "SukkaW/Surge"
 SUKKA_DEFAULT_REF = "master"
 SUKKA_GLOBAL_PATH = "Source/non_ip/global.ts"
 SUKKA_AI_PATH = "Source/non_ip/ai.conf"
-USER_AGENT = "schmidttt-Surge-Rules/0.1 (+local-review-build)"
+USER_AGENT = "schmidttt-surge-rules/0.1 (+local-review-build)"
 CORE_SUFFIXES = {"google.com", "googleapis.com", "gstatic.com"}
 PRODUCT_LISTS = ("google-deepmind", "youtube")
 OUTPUT_TYPES = {"domain", "full"}
@@ -322,7 +322,7 @@ def render_rules(source: SourceMetadata, rules: Sequence[Rule]) -> str:
     header = [
         "# NAME: schmidttt's Google Ruleset",
         "# AUTHOR: schmidttt",
-        "# REPO: https://github.com/schmidttt/Surge-Rules",
+        "# REPO: https://github.com/schmidttt/surge-rules",
         "# UPDATED: {}".format(format_updated_at(source.committed_at)),
         "# TOTAL: {}".format(len(rules)),
         "#",
@@ -432,6 +432,36 @@ def load_existing_unsupported(path: Path) -> Optional[Set[str]]:
     return set(values)
 
 
+def load_existing_sukka_gaps(path: Path) -> Optional[Dict[str, int]]:
+    if not path.exists():
+        return None
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        sukka = payload["sukka"]
+        gaps = {
+            "global_google": int(
+                sukka["global_google"]["counts"]["needs_review"]
+            ),
+            "google_ai": int(sukka["google_ai"]["counts"]["needs_review"]),
+        }
+    except (KeyError, OSError, TypeError, ValueError, json.JSONDecodeError):
+        return None
+    return gaps
+
+
+def current_sukka_gaps(reference_audit: Mapping[str, object]) -> Optional[Dict[str, int]]:
+    try:
+        sukka = reference_audit["sukka"]
+        return {
+            "global_google": int(
+                sukka["global_google"]["counts"]["needs_review"]
+            ),
+            "google_ai": int(sukka["google_ai"]["counts"]["needs_review"]),
+        }
+    except (KeyError, TypeError, ValueError):
+        return None
+
+
 def identity_to_surge(identity: Tuple[str, str]) -> str:
     return rule_to_surge(Rule(identity[0], identity[1]))
 
@@ -444,6 +474,8 @@ def assess_change(
     max_auto_additions: int,
     max_auto_change_ratio: float,
     max_build_change_ratio: float,
+    sukka_gaps: Optional[Mapping[str, int]] = None,
+    existing_sukka_gaps: Optional[Mapping[str, int]] = None,
 ) -> Dict[str, object]:
     new = {rule.identity for rule in main}
     added = new.difference(existing_main)
@@ -467,6 +499,17 @@ def assess_change(
         reasons.append("actual-change-ratio-above-auto-merge-limit")
     if unsupported_changed:
         reasons.append("unsupported-rule-set-changed")
+    increased_sukka_gaps: Dict[str, Dict[str, int]] = {}
+    if sukka_gaps is not None and existing_sukka_gaps is not None:
+        for name, current in sukka_gaps.items():
+            previous = existing_sukka_gaps.get(name, 0)
+            if current > previous:
+                increased_sukka_gaps[name] = {
+                    "previous": previous,
+                    "current": current,
+                }
+        if increased_sukka_gaps:
+            reasons.append("sukka-reference-gap-increased")
 
     auto_merge_eligible = not reasons
     return {
@@ -480,6 +523,9 @@ def assess_change(
         "actual_change_count": change_count,
         "actual_change_ratio": round(change_ratio, 6),
         "unsupported_changed": unsupported_changed,
+        "sukka_reference_gaps": dict(sukka_gaps or {}),
+        "previous_sukka_reference_gaps": dict(existing_sukka_gaps or {}),
+        "increased_sukka_reference_gaps": increased_sukka_gaps,
         "reasons": reasons,
         "added": [identity_to_surge(identity) for identity in sorted(added)],
         "removed": [identity_to_surge(identity) for identity in sorted(removed)],
@@ -816,16 +862,6 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         args.max_change_ratio,
         args.allow_large_change,
     )
-    change_assessment = assess_change(
-        main_rules,
-        existing_main,
-        unsupported_omitted,
-        existing_unsupported,
-        args.auto_merge_max_additions,
-        args.auto_merge_max_change_ratio,
-        args.max_change_ratio,
-    )
-
     official_core_audit = validate_official_core(
         official_core_rules,
         main_rules,
@@ -878,6 +914,20 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         },
         "google_official_core": official_core_audit,
     }
+    existing_sukka_gaps = load_existing_sukka_gaps(
+        project_root / "reports/google/reference-audit.json"
+    )
+    change_assessment = assess_change(
+        main_rules,
+        existing_main,
+        unsupported_omitted,
+        existing_unsupported,
+        args.auto_merge_max_additions,
+        args.auto_merge_max_change_ratio,
+        args.max_change_ratio,
+        current_sukka_gaps(reference_audit),
+        existing_sukka_gaps,
+    )
 
     report = {
         "schema_version": 2,

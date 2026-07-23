@@ -1,0 +1,2 @@
+# Manually reviewed v2fly @cn candidates that must stay out of GoogleCN.list.
+# Entries already covered by automatic hard exclusions do not need duplication.

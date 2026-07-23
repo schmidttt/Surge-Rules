@@ -7,10 +7,19 @@
   "baseline_rules": 890,
   "classification": "low-risk",
   "generated_rules": 890,
+  "increased_sukka_reference_gaps": {},
+  "previous_sukka_reference_gaps": {
+    "global_google": 20,
+    "google_ai": 1
+  },
   "reasons": [],
   "removed": [],
   "removed_count": 0,
   "schema_version": 1,
+  "sukka_reference_gaps": {
+    "global_google": 20,
+    "google_ai": 1
+  },
   "thresholds": {
     "automatic_deletions_allowed": false,
     "max_auto_additions": 20,

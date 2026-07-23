@@ -202,6 +202,27 @@ class BuildTests(unittest.TestCase):
         self.assertFalse(assessment["auto_merge_eligible"])
         self.assertIn("unsupported-rule-set-changed", assessment["reasons"])
 
+    def test_increased_sukka_gap_requires_review(self):
+        existing = {
+            ("domain", "google.com"),
+            ("domain", "googleapis.com"),
+            ("domain", "gstatic.com"),
+        }
+        main = [MODULE.Rule(kind, value) for kind, value in existing]
+        assessment = MODULE.assess_change(
+            main,
+            existing,
+            [],
+            set(),
+            20,
+            0.50,
+            0.10,
+            {"global_google": 3, "google_ai": 1},
+            {"global_google": 2, "google_ai": 1},
+        )
+        self.assertFalse(assessment["auto_merge_eligible"])
+        self.assertIn("sukka-reference-gap-increased", assessment["reasons"])
+
     def test_blackmatrix_is_comparison_only(self):
         main, _, _ = MODULE.build_outputs(self.tree, [], [])
         text = (FIXTURE_ROOT / "BlackMatrix-Google.list").read_text(

@@ -33,7 +33,7 @@ BLACKMATRIX_DEFAULT_REF = "master"
 SUKKA_REPOSITORY = "SukkaW/Surge"
 SUKKA_DEFAULT_REF = "master"
 SUKKA_STREAM_PATH = "Source/stream.ts"
-USER_AGENT = "schmidttt-Surge-Rules/0.2 (+media-rules-build)"
+USER_AGENT = "schmidttt-surge-rules/0.2 (+media-rules-build)"
 OUTPUT_TYPES = {"domain", "full"}
 TYPE_ORDER = {"full": 0, "domain": 1}
 DISPLAY_TIMEZONE = timezone(timedelta(hours=8))
@@ -366,7 +366,7 @@ def render_rules(config: ProductConfig, source: SourceMetadata, rules: Sequence[
     header = [
         "# NAME: schmidttt's {} Ruleset".format(config.display_name),
         "# AUTHOR: schmidttt",
-        "# REPO: https://github.com/schmidttt/Surge-Rules",
+        "# REPO: https://github.com/schmidttt/surge-rules",
         "# UPDATED: {}".format(format_updated_at(source.committed_at)),
         "# TOTAL: {}".format(len(rules)),
         "#",

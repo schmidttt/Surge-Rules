@@ -42,10 +42,13 @@ jobs:
       - name: Run offline tests
         run: python3 -m unittest discover -s tests/google -v
 
-      - name: Build from pinned upstream commits
+      - name: Resolve and pin current upstream commits
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: python3 scripts/google/build_google_rules.py --fetch
+
+      - name: Validate repository
+        run: python3 scripts/validate_repository.py
 
       - name: Show generated changes
         run: git diff --check && git diff --stat
