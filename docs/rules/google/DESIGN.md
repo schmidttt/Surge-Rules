@@ -97,16 +97,19 @@ google 根列表
 
 从扁平规则文件中删除 `DOMAIN,gemini.google.com`，不能消除 `DOMAIN-SUFFIX,google.com` 对它的覆盖。因此三个产品集合只能做到“精确条目尽量分离”，最终边界仍由 Surge 首次命中顺序保证。
 
-未来接入 Surge 时建议顺序为：
+接入 Surge 时建议顺序为：
 
 ```ini
-# 仅示意，不是本项目对现有配置的修改
-RULE-SET,<Gemini规则地址>,<Gemini策略>,extended-matching
+RULE-SET,<GoogleAI.list地址>,🔍 Google,extended-matching
+RULE-SET,<AI.list地址>,🤖 Intelligence,extended-matching
 RULE-SET,<YouTube规则地址>,📹 YouTube,extended-matching
-RULE-SET,<本项目Google.list地址>,<待确认策略>,extended-matching
+RULE-SET,<本项目Google.list地址>,🔍 Google,extended-matching
 ```
 
-`Google.list` 最终指向独立 `🔍 Google` 还是已有的海外策略，是后续配置设计决策；生成器不预设答案。
+`GoogleAI.list` 和 `Google.list` 都指向 `🔍 Google`，因此 Gemini 与
+Google 验证跳转天然使用同一出口。非 Google 海外 AI 由 `AI.list`
+交给 `🤖 Intelligence`。具体生成边界见
+[`../ai/DESIGN.md`](../ai/DESIGN.md)。
 
 ## 5. 失败保护
 
@@ -152,11 +155,10 @@ cron: "0 4 * * 2,4,6"
 
 两者都使用 `timezone: "Asia/Shanghai"`。两周观察结束后，只需把仓库变量设为 `SYNC_PHASE=stable`；工作流会跳过每天触发，只在周二、周四、周六执行。Surge 端以后仍可保留 `update-interval=86400`，它只负责每天检查远程文件是否变化。
 
-## 7. 发布前仍需用户确认
+## 7. 已确认的运行边界
 
-1. 仓库名称、可见性和所有者；
-2. 是否接受 v2fly 作为唯一正式源；
-3. Gemini 规则最终使用 Sukka、v2fly 子表还是个人 override；
-4. `Google.list` 最终指向哪个策略组；
-5. 是否在观察期启用每天同步；
-6. GitHub 仓库中是否允许 Actions 创建分支和 PR。
+- v2fly 是唯一正式生成来源；
+- GoogleAI 使用 v2fly `google-deepmind`；
+- GoogleAI 与 Google 都指向 `🔍 Google`；
+- Sukka 与其他对照源只参与审计；
+- 同步更新先进入 PR，低风险自动合并由独立仓库变量控制。

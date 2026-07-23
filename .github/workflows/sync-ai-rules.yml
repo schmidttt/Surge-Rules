@@ -1,0 +1,133 @@
+name: Sync GoogleAI and AI rules
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "20 4 * * *"
+      timezone: "Asia/Shanghai"
+    - cron: "20 4 * * 2,4,6"
+      timezone: "Asia/Shanghai"
+
+concurrency:
+  group: ai-rules-sync
+  cancel-in-progress: false
+
+jobs:
+  build-and-open-review-pr:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (vars.ENABLE_SCHEDULED_SYNC == 'true' &&
+        ((github.event.schedule == '20 4 * * *' && vars.SYNC_PHASE != 'stable') ||
+         (github.event.schedule == '20 4 * * 2,4,6' && vars.SYNC_PHASE == 'stable')))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Check out default branch
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Run offline tests
+        run: python3 -m unittest discover -s tests/ai -v
+
+      - name: Resolve and pin current upstream commits
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 scripts/ai/build_ai_rules.py --fetch
+
+      - name: Validate repository
+        run: python3 scripts/validate_repository.py
+
+      - name: Show generated changes
+        run: git diff --check && git diff --stat
+
+      - name: Detect changes
+        id: changes
+        shell: bash
+        run: |
+          if git diff --quiet -- rules/GoogleAI rules/AI reports/ai; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Read risk assessment
+        if: steps.changes.outputs.changed == 'true'
+        id: risk
+        shell: bash
+        run: |
+          echo "auto_merge=$(jq -r '.auto_merge_eligible' reports/ai/change-assessment.json)" >> "$GITHUB_OUTPUT"
+          echo "classification=$(jq -r '.classification' reports/ai/change-assessment.json)" >> "$GITHUB_OUTPUT"
+          echo "added=$(jq -r '.added_count' reports/ai/change-assessment.json)" >> "$GITHUB_OUTPUT"
+          echo "removed=$(jq -r '.removed_count' reports/ai/change-assessment.json)" >> "$GITHUB_OUTPUT"
+          echo "ratio=$(jq -r '.actual_change_ratio' reports/ai/change-assessment.json)" >> "$GITHUB_OUTPUT"
+
+      - name: Create or update review branch
+        if: steps.changes.outputs.changed == 'true'
+        id: review_pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BASE_BRANCH: ${{ github.event.repository.default_branch }}
+          REVIEW_BRANCH: automation/ai-rules-sync
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin "$REVIEW_BRANCH:refs/remotes/origin/$REVIEW_BRANCH" || true
+          git switch -C "$REVIEW_BRANCH"
+          git add rules/GoogleAI rules/AI reports/ai
+          git commit -m "chore: sync GoogleAI and AI rules"
+          git push --force-with-lease origin "HEAD:$REVIEW_BRANCH"
+
+          REASONS=$(jq -r 'if (.reasons | length) == 0 then "none" else (.reasons | join(", ")) end' reports/ai/change-assessment.json)
+          cat > /tmp/ai-rules-pr.md <<EOF
+          Automated GoogleAI and non-Google overseas AI refresh.
+
+          - Classification: ${{ steps.risk.outputs.classification }}
+          - Added rules: ${{ steps.risk.outputs.added }}
+          - Removed rules: ${{ steps.risk.outputs.removed }}
+          - Actual change ratio: ${{ steps.risk.outputs.ratio }}
+          - Review reasons: ${REASONS}
+
+          v2fly is the only formal source. Sukka is audit-only.
+          GoogleAI must precede AI and both outputs must remain disjoint.
+          Review report: reports/ai/review.md
+          Review guide: docs/rules/ai/REVIEW_CHECKLIST.md
+          EOF
+
+          if PR_URL=$(gh pr view "$REVIEW_BRANCH" --json url --jq .url 2>/dev/null); then
+            gh pr edit "$PR_URL" --body-file /tmp/ai-rules-pr.md
+          else
+            PR_URL=$(gh pr create \
+              --base "$BASE_BRANCH" \
+              --head "$REVIEW_BRANCH" \
+              --title "chore: review GoogleAI and AI rules sync" \
+              --body-file /tmp/ai-rules-pr.md)
+          fi
+          echo "url=$PR_URL" >> "$GITHUB_OUTPUT"
+
+      - name: Auto-merge low-risk refresh
+        if: >-
+          steps.changes.outputs.changed == 'true' &&
+          steps.risk.outputs.auto_merge == 'true' &&
+          vars.AUTO_MERGE_LOW_RISK == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh pr merge "${{ steps.review_pr.outputs.url }}" --squash --delete-branch
+
+      - name: Keep refresh for review
+        if: >-
+          steps.changes.outputs.changed == 'true' &&
+          (steps.risk.outputs.auto_merge != 'true' ||
+           vars.AUTO_MERGE_LOW_RISK != 'true')
+        run: >-
+          echo "::warning::GoogleAI and AI rules refresh requires review:
+          ${{ steps.review_pr.outputs.url }}"

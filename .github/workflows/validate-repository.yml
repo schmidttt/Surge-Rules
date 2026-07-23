@@ -28,6 +28,7 @@ jobs:
         run: |
           python3 -m unittest discover -s tests/google -v
           python3 -m unittest discover -s tests/googlecn -v
+          python3 -m unittest discover -s tests/ai -v
           python3 -m unittest discover -s tests/game -v
           python3 -m unittest discover -s tests/media -v
 

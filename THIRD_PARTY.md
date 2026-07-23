@@ -6,8 +6,8 @@
 
 - 地址：https://github.com/v2fly/domain-list-community
 - 许可证：MIT。
-- 用途：Google、YouTube、TikTok、BiliBili 四类规则的唯一正式数据上游。
-- 使用方式：读取固定提交中的 `data` 目录，按其 include、属性和 affiliation 语义生成 Surge `Google.list`、`YouTube.list`、`TikTok.list` 和 `BiliBili.list`。
+- 用途：Google、GoogleCN、GoogleAI、AI、YouTube、TikTok、BiliBili、Game 与 GameCN 的唯一正式数据上游。
+- 使用方式：读取固定提交中的 `data` 目录，按其 include、属性和 affiliation 语义生成本仓库的九张 Surge 规则表。
 - 署名与许可证：生成文件头保留来源、提交 SHA、版权与许可证提示；MIT 全文保存在 `THIRD_PARTY_LICENSES/v2fly-MIT.txt`。
 
 ## blackmatrix7/ios_rule_script
@@ -21,7 +21,7 @@
 
 - 地址：https://github.com/SukkaW/Surge
 - 上游许可证：除其特别说明的文件外为 AGPL-3.0。
-- 用途：Google 构建读取 `GLOBAL.GOOGLE` 和 `ai.conf` Google 段；YouTube、TikTok、BiliBili 构建读取 `Source/stream.ts` 对应服务段，仅进行覆盖分类统计。
+- 用途：Google 构建读取 `GLOBAL.GOOGLE` 和 `ai.conf` Google 段；GoogleAI/AI 构建读取完整 `ai.conf`；YouTube、TikTok、BiliBili 构建读取 `Source/stream.ts` 对应服务段，均只进行覆盖分类统计。
 - 持久化边界：不自动合并；公开报告只保留来源提交、总量、分类数量和 unsupported 类型数量，不保存 Sukka 的具体规则条目或原始规则行。
 
 ## Google 官方产品文档
@@ -33,7 +33,7 @@
 
 ## 发布原则
 
-- 正式 `Google.list`、`YouTube.list`、`TikTok.list` 和 `BiliBili.list` 只由 v2fly 数据和各自显式补丁生成。
+- 九张正式规则表只由 v2fly 数据和各自显式补丁生成。
 - BlackMatrix7 与 Sukka 仅作为在线、只读、聚合统计参照。
-- 测试夹具使用合成 `.example` 数据模拟第三方格式，不复制第三方规则片段。
+- 测试夹具只保留验证解析边界所需的少量合成或核心域名，不复制第三方成品规则文件。
 - 新增任何正式上游前，必须先确认许可证兼容性并更新本文件。

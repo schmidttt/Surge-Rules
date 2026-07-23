@@ -1,0 +1,57 @@
+{
+  "counts": {
+    "ai_exclude_patch": 0,
+    "ai_include_patch": 1,
+    "ai_output": 127,
+    "domestic_ai_reference": 112,
+    "google_ai_exclude_patch": 0,
+    "google_ai_expanded": 40,
+    "google_ai_include_patch": 0,
+    "google_ai_output": 40,
+    "google_partition_excluded": 40,
+    "overseas_ai_expanded": 167,
+    "overseas_ai_unsupported": 1
+  },
+  "policy": {
+    "domestic_ai_is_not_published": true,
+    "google_ai_must_precede_ai": true,
+    "google_ai_target": "Google",
+    "non_google_overseas_ai_target": "Intelligence",
+    "sukka_is_audit_only": true,
+    "unsupported_rules_are_report_only": true,
+    "v2fly_is_only_generation_source": true
+  },
+  "schema_version": 1,
+  "source": {
+    "sukka_audit": {
+      "commit": "a54fa7ea89f3aa4df2ce61358ab8e7c23e5c7b7a",
+      "committed_at": "2026-07-22T06:15:31Z",
+      "repository": "SukkaW/Surge",
+      "requested_ref": "master"
+    },
+    "v2fly": {
+      "commit": "b086c38db74b626c0a24fdd8ed41e33515577bf9",
+      "committed_at": "2026-07-21T14:59:07Z",
+      "repository": "v2fly/domain-list-community",
+      "requested_ref": "master"
+    }
+  },
+  "sukka_audit": {
+    "available": true,
+    "covered_by_ai": 21,
+    "covered_by_google_ai": 22,
+    "domain_rules": 47,
+    "uncovered": 4,
+    "unsupported_types": {
+      "DOMAIN-KEYWORD": 2,
+      "URL-REGEX": 1
+    }
+  },
+  "unsupported_omitted": [
+    {
+      "identity": "regexp:^chatgpt-async-webps-prod-\\S+-\\d+\\.webpubsub\\.azure\\.com$",
+      "reason": "unsupported-overseas-ai-regexp",
+      "source": "category-ai-!cn"
+    }
+  ]
+}

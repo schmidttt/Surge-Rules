@@ -15,6 +15,8 @@ from typing import Dict, List, Optional, Sequence, Tuple
 EXPECTED_LISTS = {
     "rules/Google/Google.list": 500,
     "rules/GoogleCN/GoogleCN.list": 20,
+    "rules/GoogleAI/GoogleAI.list": 30,
+    "rules/AI/AI.list": 100,
     "rules/YouTube/YouTube.list": 100,
     "rules/TikTok/TikTok.list": 20,
     "rules/BiliBili/BiliBili.list": 30,
@@ -132,6 +134,68 @@ def validate_cross_outputs(all_rules: Dict[str, List[str]]) -> None:
         raise ValidationError(
             "GoogleCN contains a hard-excluded service: {}".format(forbidden)
         )
+
+    def parsed(rule: str) -> Tuple[str, str]:
+        rule_type, domain = rule.split(",", 1)
+        return rule_type, domain
+
+    def covers(left: str, right: str) -> bool:
+        left_type, left_domain = parsed(left)
+        right_type, right_domain = parsed(right)
+        if left_type == "DOMAIN":
+            return right_type == "DOMAIN" and left_domain == right_domain
+        return (
+            right_domain == left_domain
+            or right_domain.endswith("." + left_domain)
+        )
+
+    def overlap(left: str, right: str) -> bool:
+        return covers(left, right) or covers(right, left)
+
+    google_ai = all_rules["rules/GoogleAI/GoogleAI.list"]
+    ai = all_rules["rules/AI/AI.list"]
+    ai_cross = sorted(
+        "{} <> {}".format(left, right)
+        for left in google_ai
+        for right in ai
+        if overlap(left, right)
+    )
+    if ai_cross:
+        raise ValidationError(
+            "GoogleAI and AI overlap: {}".format(ai_cross[:10])
+        )
+
+    google = all_rules["rules/Google/Google.list"]
+    google_leaks = sorted(
+        rule
+        for rule in ai
+        if any(overlap(rule, google_rule) for google_rule in google)
+    )
+    if google_leaks:
+        raise ValidationError(
+            "AI contains Google-owned coverage: {}".format(google_leaks[:10])
+        )
+
+    required = {
+        "rules/GoogleAI/GoogleAI.list": {
+            "DOMAIN-SUFFIX,gemini.google.com",
+            "DOMAIN-SUFFIX,deepmind.com",
+            "DOMAIN-SUFFIX,generativelanguage.googleapis.com",
+        },
+        "rules/AI/AI.list": {
+            "DOMAIN-SUFFIX,openai.com",
+            "DOMAIN-SUFFIX,chatgpt.com",
+            "DOMAIN-SUFFIX,anthropic.com",
+            "DOMAIN-SUFFIX,claude.ai",
+            "DOMAIN-SUFFIX,perplexity.ai",
+        },
+    }
+    for path, core_rules in required.items():
+        missing = sorted(core_rules.difference(all_rules[path]))
+        if missing:
+            raise ValidationError(
+                "{} is missing core rules: {}".format(path, missing)
+            )
 
 
 def check_remote_ref(project_root: Path, ref: str) -> None:

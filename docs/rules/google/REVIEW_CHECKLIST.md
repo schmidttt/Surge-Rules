@@ -2,7 +2,7 @@
 
 ## 首次发布前
 
-- [ ] 确认项目仍未修改任何 Surge 配置。
+- [ ] 确认 Google 构建器只修改 `rules/Google` 与 `reports/google`。
 - [ ] 确认 `Google.list` 只以 v2fly 为正式源。
 - [ ] 确认 BlackMatrix7 只以聚合数量出现在差异报告中，没有具体条目样本。
 - [ ] 确认 Sukka 只以聚合数量出现在 `reference-audit.json`，没有具体条目或自动混入规则产物。
@@ -13,7 +13,7 @@
 - [ ] 检查报告里的 unsupported 数量与类型；异常时回到上游固定提交人工核对。
 - [ ] 抽查 `google.com`、`googleapis.com`、`gstatic.com` 仍在 `Google.list`。
 - [ ] 抽查 Gemini/YouTube 的精确条目已从 `Google.list` 移出。
-- [ ] 确认项目没有生成 GoogleCN、广告或其他路由策略文件。
+- [ ] 确认 Google 主表构建没有越权改写 GoogleCN、GoogleAI 或 AI 产物。
 - [ ] 确认 GitHub Actions 默认只允许最小权限。
 - [ ] 确认定时同步变量默认未开启。
 
